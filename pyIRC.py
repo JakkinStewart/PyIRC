@@ -68,7 +68,8 @@ while 1:
 #        print()
 #        print(line[3])
     try:
-        for word in line[3:]:
+#        for word in line[3:]:
+        for word in line:
             print(word, end=' ')
         print()
 #        print(line[3:])

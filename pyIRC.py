@@ -24,14 +24,14 @@ if logging.lower() == 'y':
     log = input("Where do you want save the log file? (Default is in currect directory.) ")
 elif logging == '':
     log = './'
-
+prevtime = 0
 
 # If an input was left blank, use defaults.
 if host == '': HOST='irc.freenode.net'
 elif host != '': HOST=host
 if port == '': PORT=6697
 elif port != '': PORT=int(port)
-if nick == '': NICK='PyIRC'
+if nick == '': NICK='DovahBot'
 elif nick != '': NICK=nick
 if chan == '': CHANNEL='#temp'
 elif chan != '': CHANNEL=chan
@@ -44,10 +44,14 @@ elif logging.lower() == 'n':
     pass
 else: exit("This is an unusual error. Contact JakkinStewart at Github to solve this.")
 
+PASS = 'asdfghjkl'
+
 # Sets identity and realname for the IRC server.
-IDENT='pyirc'
+IDENT='dovahkiin'
 REALNAME='Python IRC Client'
+
 print("Connecting...")
+
 # Begins readbuffer.
 # Taken from http://archive.oreilly.com/pub/h/1968:
 # You need a readbuffer because your might not always be able to read complete IRC commands from the server (due to a saturated Internet connection, operating system limits, etc).
@@ -66,9 +70,10 @@ elif sslEnable.lower() == 'n':
     s.connect((HOST,PORT))
 
 # Send messages to the server containing the nick, identity, server, and realname. All messages must be encoded in utf-8.
+s.send(("PASS %s\r\n" % PASS).encode('utf-8'))
 s.send(('NICK %s\r\n' % NICK).encode('utf-8'))
 s.send(('USER %s %s bla : %s\r\n' % (IDENT, HOST, REALNAME)).encode('utf-8'))
-
+#s.send(('PRIVMSG nickserv identify %s %s\r\n' % (NICK, PASS)).encode('utf-8'))
 # Enter an infinite loop.
 
 while 1:
@@ -80,7 +85,9 @@ while 1:
         for line in temp:
             line=line.rstrip()
             line=line.split()
-
+            print(line)
+            if 'JOIN' in line and CHANNEL in line:
+                s.send(("PRIVMSG %s :Hi, I'm %s. If you ever need advice, just ask!\r\n" % (CHANNEL, NICK)).encode('utf-8'))
             if (line[0]=='PING'):
                 s.send(("PONG %s\r\n" % line[1]).encode('utf-8'))
             if (line[1]=='MODE'):
@@ -110,6 +117,13 @@ while 1:
                     #print(parsed_json['slip']['advice'])
                     s.send(("PRIVMSG %s :%s\r\n" % (CHANNEL, parsed_json['slip']['advice'])).encode('utf-8'))
 
+
+                elif NICK in y and 'Hello' in y or 'hello' in y or 'hi' in y or 'Hi' in y or 'HI' in y:
+                    s.send(("PRIVMSG %s :Hello, %s\r\n" % (CHANNEL, user)).encode('utf-8'))
+
+                elif NICK in y and 'info' in y:
+                    s.send((("PRIVMSG %s :I'm %s, written by JakkinStewart on GitHub. Right now I can dispense advice using the adviceslip.com API. Hopefully, I will be extended to help train new ISSO members.\r\n") % (CHANNEL, NICK)).encode('utf-8'))
+
                 printOut = user + ' | ' + message
                 ircChat = printOut +'\n'
                 print(printOut)
@@ -117,7 +131,7 @@ while 1:
                 logFile.flush()
 
     except KeyboardInterrupt:
-        s.send(("PART").encode("utf-8"))
+        s.send(("QUIT").encode("utf-8"))
         logFile.write('\nClosed\n')
         logFile.flush()
         print()

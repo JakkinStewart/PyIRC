@@ -13,6 +13,35 @@ import os
 import json
 from string import punctuation
 
+def sendMessage(msg, CHAN):
+    s.send(("PRIVMSG %s :%s\r\n" % (CHAN, msg)).encode('utf-8'))
+
+def info(s, CHAN, NICK):
+    s.send((("PRIVMSG %s :I'm %s, written by JakkinStewart on GitHub. Right now I can dispense advice using the adviceslip.com API. Hopefully, I will be extended to help train new ISSO members.\r\n") % (CHAN, NICK)).encode('utf-8'))
+
+def helpMe(s, CHAN, NICK):
+    s.send(("PRIVMSG %s :'advice': Mentioning the word 'advice' to me will cause me to give you advice.\r\n" % CHANNEL).encode('utf-8'))
+    s.send(("PRIVMSG %s :'info'  : Mentioning the word 'info' to me will give general info on me. (Not much yet.)\r\n" % CHANNEL).encode('utf-8'))
+    s.send(("PRIVMSG %s :'Hello' : Saying hi to me will make me say hi back.\r\n" % CHANNEL).encode('utf-8'))
+    s.send(("PRIVMSG %s :'help'  : Using the word 'help' with my name will give you this message.\r\n" % CHANNEL).encode('utf-8'))
+
+def aircrack(s, CHAN, NICK):
+    s.send(("PRIVMSG %s :Aircrack-ng is a complete suite of tools to assess WiFi network Security.\r\n" % CHAN).encode('utf-8'))
+
+    s.send(("PRIVMSG %s :Requirements: WiFi card. (Can be USB, as long as Aircrack-ng can see it.) | Helpful tutor. (I haven't been coded to be helpful yet.)\r\n" % CHAN).encode('utf-8'))
+
+    s.send(("PRIVMSG %s :airmon-ng check kill\r\n" % CHAN).encode('utf-8'))
+
+    s.send(("PRIVMSG %s :airmon-ng start [interface]\r\n" % CHAN).encode('utf-8'))
+
+    s.send(("PRIVMSG %s :airodump-ng [interface]mon\r\n" % CHAN).encode('utf-8'))
+
+    s.send(("PRIVMSG %s :airodump-ng -c [channel] --bssid [BSSID] -w dump [interface]mon\r\n" % CHAN).encode('utf-8'))
+
+    s.send(("PRIVMSG %s :airocrack-ng --bssid [BSSID] dump-*.cap\r\n" % CHAN).encode('utf-8'))
+
+    s.send(("PRIVMSG %s :Presto! You just cracked the key!\r\n" % CHAN).encode('utf-8'))
+
 # Asks user for input.
 host = '' #input("Enter IRC server [Freenode]: ")
 port = '' #input("Enter port [6697]: ")
@@ -86,8 +115,8 @@ while 1:
             line=line.rstrip()
             line=line.split()
             print(line)
-            if 'JOIN' in line and CHANNEL in line:
-                s.send(("PRIVMSG %s :Hi, I'm %s. If you ever need advice, just ask!\r\n" % (CHANNEL, NICK)).encode('utf-8'))
+            #if 'JOIN' in line and CHANNEL in line:
+                #s.send(("PRIVMSG %s :Hi, I'm %s. If you ever need advice, just ask!\r\n" % (CHANNEL, NICK)).encode('utf-8'))
             if (line[0]=='PING'):
                 s.send(("PONG %s\r\n" % line[1]).encode('utf-8'))
             if (line[1]=='MODE'):
@@ -118,11 +147,21 @@ while 1:
                     s.send(("PRIVMSG %s :%s\r\n" % (CHANNEL, parsed_json['slip']['advice'])).encode('utf-8'))
 
 
-                elif NICK in y and 'Hello' in y or 'hello' in y or 'hi' in y or 'Hi' in y or 'HI' in y:
+                elif NICK in y and ('Hello' in y or 'hello' in y or 'hi' in y or 'Hi' in y or 'HI' in y):
+                    print("I see it.")
                     s.send(("PRIVMSG %s :Hello, %s\r\n" % (CHANNEL, user)).encode('utf-8'))
 
+                elif NICK in y and 'help' in y:
+                    print("I see it")
+                    helpMe(s, CHANNEL, NICK)
+
                 elif NICK in y and 'info' in y:
-                    s.send((("PRIVMSG %s :I'm %s, written by JakkinStewart on GitHub. Right now I can dispense advice using the adviceslip.com API. Hopefully, I will be extended to help train new ISSO members.\r\n") % (CHANNEL, NICK)).encode('utf-8'))
+                    print("I see it")
+                    info(s, CHANNEL, NICK)
+
+                elif NICK in y and 'tutorial' in y and ('WEP' in y or 'wep' in y):
+                    print("I see it.")
+                    aircrack(s, CHANNEL, NICK)
 
                 printOut = user + ' | ' + message
                 ircChat = printOut +'\n'

@@ -12,98 +12,123 @@ import ssl
 import os
 import json
 from string import punctuation
+from time import sleep
 
-def sendMessage(msg, CHAN):
-    s.send(("PRIVMSG %s :%s\r\n" % (CHAN, msg)).encode('utf-8'))
 
-def info(s, CHAN, NICK):
-    s.send((("PRIVMSG %s :I'm %s, written by JakkinStewart on GitHub. Right now I can dispense advice using the adviceslip.com API. Hopefully, I will be extended to help train new ISSO members.\r\n") % (CHAN, NICK)).encode('utf-8'))
 
-def helpMe(s, CHAN, NICK):
-    s.send(("PRIVMSG %s :'advice': Mentioning the word 'advice' to me will cause me to give you advice.\r\n" % CHANNEL).encode('utf-8'))
-    s.send(("PRIVMSG %s :'info'  : Mentioning the word 'info' to me will give general info on me. (Not much yet.)\r\n" % CHANNEL).encode('utf-8'))
-    s.send(("PRIVMSG %s :'Hello' : Saying hi to me will make me say hi back.\r\n" % CHANNEL).encode('utf-8'))
-    s.send(("PRIVMSG %s :'help'  : Using the word 'help' with my name will give you this message.\r\n" % CHANNEL).encode('utf-8'))
 
-def aircrack(s, CHAN, NICK):
-    s.send(("PRIVMSG %s :Aircrack-ng is a complete suite of tools to assess WiFi network Security.\r\n" % CHAN).encode('utf-8'))
-
-    s.send(("PRIVMSG %s :Requirements: WiFi card. (Can be USB, as long as Aircrack-ng can see it.) | Helpful tutor. (I haven't been coded to be helpful yet.)\r\n" % CHAN).encode('utf-8'))
-
-    s.send(("PRIVMSG %s :airmon-ng check kill\r\n" % CHAN).encode('utf-8'))
-
-    s.send(("PRIVMSG %s :airmon-ng start [interface]\r\n" % CHAN).encode('utf-8'))
-
-    s.send(("PRIVMSG %s :airodump-ng [interface]mon\r\n" % CHAN).encode('utf-8'))
-
-    s.send(("PRIVMSG %s :airodump-ng -c [channel] --bssid [BSSID] -w dump [interface]mon\r\n" % CHAN).encode('utf-8'))
-
-    s.send(("PRIVMSG %s :airocrack-ng --bssid [BSSID] dump-*.cap\r\n" % CHAN).encode('utf-8'))
-
-    s.send(("PRIVMSG %s :Presto! You just cracked the key!\r\n" % CHAN).encode('utf-8'))
-
-# Asks user for input.
+"""# Asks user for input.
 host = '' #input("Enter IRC server [Freenode]: ")
 port = '' #input("Enter port [6697]: ")
 nick = '' #input("Enter nick [PythonIRCBot]: ")
 chan = '' #input("Enter channel [#temp]: ")
 Ssl = '' #input("Do you want to use SSL? [Y/n]: ")
-logging = '' #input("Do you want to enable logging? [Y/n]: ")
-if logging.lower() == 'y':
-    log = input("Where do you want save the log file? (Default is in currect directory.) ")
-elif logging == '':
-    log = './'
-prevtime = 0
+logging = '' #input("Do you want to enable logging? [Y/n]: ")"""
+log = './'
 
-# If an input was left blank, use defaults.
-if host == '': HOST='irc.freenode.net'
-elif host != '': HOST=host
-if port == '': PORT=6697
-elif port != '': PORT=int(port)
-if nick == '': NICK='DovahBot'
-elif nick != '': NICK=nick
-if chan == '': CHANNEL='#temp'
-elif chan != '': CHANNEL=chan
-if Ssl == '' or Ssl.lower() == 'y': sslEnable='y'
-elif Ssl.lower() == 'n': sslEnable='n'
-if logging.lower() == '': logFile = open('%s.log' % CHANNEL, 'a')
-elif logging.lower() == 'y':
-    logFile = open(log + '%s.log' % CHANNEL, 'a')
-elif logging.lower() == 'n':
-    pass
-else: exit("This is an unusual error. Contact JakkinStewart at Github to solve this.")
-
+HOST='irc.freenode.net'
+PORT=6697
+NICK='DovahBot'
+CHANNEL=['##isso-tutorials', '#temp']
+LOG = ''
+logFile = open('%s.log' % LOG, 'a')
+sslEnable = 'y'
 PASS = 'asdfghjkl'
-
-# Sets identity and realname for the IRC server.
 IDENT='dovahkiin'
 REALNAME='Python IRC Client'
 
-print("Connecting...")
+ssL=socket.socket()
+ssL.connect((HOST,PORT))
+
+s = ssl.wrap_socket(ssL)
+
+def connectToServer(passwd, nick, ident, host, realname):
+    s.send(("PASS %s\r\n" % passwd).encode('utf-8'))
+    s.send(('NICK %s\r\n' % nick).encode('utf-8'))
+    s.send(('USER %s %s bla : %s\r\n' % (ident, host, realname)).encode('utf-8'))
+
+def sendMessage(msg, CHAN):
+    s.send(("PRIVMSG %s :%s\r\n" % (CHAN, msg)).encode('utf-8'))
+
+def info(CHAN, NICK):
+    sendMessage(("I'm %s, written by JakkinStewart on GitHub. Right now I can dispense advice using the adviceslip.com API. Hopefully, I will be extended to help train new ISSO members.\r\n" % NICK), CHAN)
+
+def helpMe(CHAN):
+    sendMessage(("'advice': Mentioning the word 'advice' to me will cause me to give you advice.\r\n"), CHAN)
+    sendMessage(("'info'  : Mentioning the word 'info' to me will give general info on me. (Not much yet.)\r\n"), CHAN)
+    sendMessage(("'Hello' : Saying hi to me will make me say hi back.\r\n"), CHAN)
+    sendMessage(("'help'  : Using the word 'help' with my name will give you this message.\r\n"), CHAN)
+
+def aircrack(CHAN):
+    sendMessage(("Aircrack-ng is a complete suite of tools to assess WiFi network Security.\r\n"), CHAN)
+
+    sendMessage(("Requirements: WiFi card. (Can be USB, as long as Aircrack-ng can see it.) | Helpful tutor. (I haven't been coded to be helpful yet.)"), CHAN)
+
+    sendMessage(("airmon-ng check kill"), CHAN)
+    sleep(1)
+    sendMessage(("airmon-ng start \x035[interface]\x03"), CHAN)
+
+    sendMessage(("airodump-ng [interface]mon"), CHAN)
+
+    sendMessage(("airodump-ng -c [channel] --bssid [BSSID] -w dump [interface]mon"), CHAN)
+
+    sendMessage(("airocrack-ng --bssid [BSSID] dump-*.cap"), CHAN)
+
+    sendMessage(("Presto! You just cracked the key!"), CHAN)
+
+def advice(CHAN):
+    os.system("curl -s http://api.adviceslip.com/advice > .advice")
+    inFile = open('.advice', 'r')
+    jsonAttempt = inFile.read()
+    parsed_json = json.loads(jsonAttempt)
+    sendMessage("%s\r\n" % (parsed_json['slip']['advice']), CHAN)
+    os.system('rm .advice')
+
+def insult(CHAN, insulter, insultee):
+    os.system('curl -s http://quandyfactory.com/insult/json > .insult')
+    #os.system("""curl -s http://www.randominsults.net/ | grep -a '<td bordercolor="#FFFFFF"><font face="Verdana" size="4"><strong><i>' | sed 's/<td bordercolor="#FFFFFF"><font face="Verdana" size="4"><strong><i>//' | sed 's|</i></strong></font>&nbsp;</td>||' | sed 's/^......//' > .insult""")
+    inFile = open('.insult', 'r')
+    #insult = inFile.read()
+    jsonAttempt = inFile.read()
+    parsed_json = json.loads(jsonAttempt)
+    sendMessage('%s, %s would like you to know something. %s ' % (insultee, insulter, parsed_json['insult']), CHAN)
+    os.system('rm .insult')
+
 
 # Begins readbuffer.
 # Taken from http://archive.oreilly.com/pub/h/1968:
 # You need a readbuffer because your might not always be able to read complete IRC commands from the server (due to a saturated Internet connection, operating system limits, etc).
 #print("Connecting...")
+
+
+
+
+
 readbuffer=''
 
 # If SSL was enabled, wrap the socket in SSL.
-if sslEnable.lower() == 'y':
-    ssL=socket.socket()
-    ssL.connect((HOST,PORT))
-    s = ssl.wrap_socket(ssL)
+#if sslEnable.lower() == 'y':
 
 # Otherwise, don't wrap anything.
-elif sslEnable.lower() == 'n':
-    s=socket.socket()
-    s.connect((HOST,PORT))
+#elif sslEnable.lower() == 'n':
+#    s=socket.socket()
+#    s.connect((HOST,PORT))
 
 # Send messages to the server containing the nick, identity, server, and realname. All messages must be encoded in utf-8.
-s.send(("PASS %s\r\n" % PASS).encode('utf-8'))
-s.send(('NICK %s\r\n' % NICK).encode('utf-8'))
-s.send(('USER %s %s bla : %s\r\n' % (IDENT, HOST, REALNAME)).encode('utf-8'))
 #s.send(('PRIVMSG nickserv identify %s %s\r\n' % (NICK, PASS)).encode('utf-8'))
 # Enter an infinite loop.
+
+connectToServer(PASS, NICK, IDENT, HOST, REALNAME)
+userList = []
+count = 0
+chanCount = -1
+counter = 0
+for a in CHANNEL:
+    counter += 1
+
+for i in range(counter):
+    users = [] * counter
+    userList.append(users)
 
 while 1:
     try:
@@ -114,19 +139,35 @@ while 1:
         for line in temp:
             line=line.rstrip()
             line=line.split()
-            print(line)
-            #if 'JOIN' in line and CHANNEL in line:
-                #s.send(("PRIVMSG %s :Hi, I'm %s. If you ever need advice, just ask!\r\n" % (CHANNEL, NICK)).encode('utf-8'))
-            if (line[0]=='PING'):
+            #print(line)
+            if line[0]=='PING':
                 s.send(("PONG %s\r\n" % line[1]).encode('utf-8'))
             if (line[1]=='MODE'):
-                s.send(("JOIN %s\r\n" % CHANNEL).encode('utf-8'))
+                for channel in CHANNEL:
+                    s.send(("JOIN %s\r\n" % channel).encode('utf-8'))
                 print("Connected!")
+
+            try:
+                if line[3] == '=':
+                    for channels in line[4:]:
+                        if channels[0] == '#':
+                            chanCount += 1
+                            userList[chanCount].append(channels)
+                        elif channels[0] == ':':
+                            userList[chanCount].append(channels[1:])
+                        else: userList[chanCount].append(channels)
+
+            except IndexError:
+                pass
 
             message = ''
             user = ''
 
             if line[1] == 'PRIVMSG':
+                #print(line)
+                if line[2] != '##isso-tutorials':
+                    sendMessage('Please join me in ##isso-tutorials.', line[2])
+                    #pass
                 stringy = line[0]
                 temporary = stringy.split('!')
                 user = str(temporary[0])[1:]
@@ -138,30 +179,28 @@ while 1:
 
                 y = [''.join(c for c in s if c not in punctuation) for s in y]
 
-                if NICK in y and 'advice' in y:
-                    os.system("curl -s http://api.adviceslip.com/advice > .file")
-                    inFile = open('.file', 'r')
-                    jsonAttempt = inFile.read()
-                    parsed_json = json.loads(jsonAttempt)
-                    #print(parsed_json['slip']['advice'])
-                    s.send(("PRIVMSG %s :%s\r\n" % (CHANNEL, parsed_json['slip']['advice'])).encode('utf-8'))
+                if line[2] == '##isso-tutorials':
+                    if NICK in message and ('Hello' or 'hello' or 'hi' or 'Hi' or 'HI') in message:
+                        sendMessage(("Hello, %s\r\n" % user), line[2])
 
+                    if NICK in message and 'advice' in message:
+                        advice(line[2])
 
-                elif NICK in y and ('Hello' in y or 'hello' in y or 'hi' in y or 'Hi' in y or 'HI' in y):
-                    print("I see it.")
-                    s.send(("PRIVMSG %s :Hello, %s\r\n" % (CHANNEL, user)).encode('utf-8'))
+                    elif NICK in message and 'help' in message:
+                        helpMe(line[2])
 
-                elif NICK in y and 'help' in y:
-                    print("I see it")
-                    helpMe(s, CHANNEL, NICK)
+                    elif NICK in message and 'info' in message:
+                        info(line[2], NICK)
 
-                elif NICK in y and 'info' in y:
-                    print("I see it")
-                    info(s, CHANNEL, NICK)
+                    elif NICK in message and 'tutorial' in message and ('WEP' or 'wep') in message:
+                        aircrack(line[2])
 
-                elif NICK in y and 'tutorial' in y and ('WEP' in y or 'wep' in y):
-                    print("I see it.")
-                    aircrack(s, CHANNEL, NICK)
+                    elif NICK in message and 'insult' in message:
+                        for users in userList:
+                            for nickname in users:
+                                if nickname in message and nickname != NICK and nickname != user:
+                                    insult(line[2], user, nickname)
+
 
                 printOut = user + ' | ' + message
                 ircChat = printOut +'\n'

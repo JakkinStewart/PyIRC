@@ -12,7 +12,7 @@ import ssl
 import os
 import json
 from string import punctuation
-import time
+from time import sleep
 import re
 
 
@@ -28,7 +28,7 @@ PASS = 'asdfghjkl'
 IDENT='dovahkiin'
 REALNAME='Python IRC Client'
 urlList = []
-sleep = time.sleep
+
 # Connections. Automatically connects through ssl. Hope to make a function of these later.
 # Might just make it a class, but don't want to deal with it right now.
 ssL=socket.socket()
@@ -140,8 +140,6 @@ userList = []
 count = 0
 chanCount = -1
 counter = 0
-timer = round(time.time())
-msgTime = timer - 3
 print("Connecting...")
 
 for a in CHANNEL:
@@ -201,77 +199,32 @@ while 1:
                     #print(urlList)
 
                 elif NICK in message and line[2] != '##isso-tutorials':
-                    if msgTime <= (timer + 3):
-                        sleep(3)
-                        msgTime = timer
-                        sendMessage('Please join me in ##isso-tutorials.', line[2])
-                    else:
-                        msgTime = timer
-                        sendMessage('Please join me in ##isso-tutorials.', line[2])
+                    sendMessage('Please join me in ##isso-tutorials.', line[2])
+                    #pass
 
                 y = [''.join(c for c in s if c not in punctuation) for s in y]
 
                 if line[2] == '##isso-tutorials':
                     if NICK in message and ('Hello' or 'hello' or 'hi' or 'Hi' or 'HI') in message:
-                        if timer <= (timer + 3):
-                            sleep(3)
-                            msgTime = timer
-                            sendMessage(("Hello, %s\r\n" % user), line[2])
-                        else:
-                            msgTime = timer
-                            sendMessage(("Hello, %s\r\n" % user), line[2])
-
+                        sendMessage(("Hello, %s\r\n" % user), line[2])
 
                     if NICK in message and 'advice' in message:
-                        if timer <= (timer + 3):
-                            sleep(3)
-                            msgTime = timer
-                            advice(line[2])
-                        else:
-                            msgTime = timer
-                            advice(line[2])
+                        advice(line[2])
 
                     elif NICK in message and 'help' in message:
-                        if timer <= (timer + 3):
-                            sleep(3)
-                            msgTime = timer
-                            helpMe(line[2])
-                        else:
-                            msgTime = timer
-                            helpMe(line[2])
+                        helpMe(line[2])
 
                     elif NICK in message and 'info' in message:
-                        if timer <= (timer + 3):
-                            sleep(3)
-                            msgTime = timer
-                            info(line[2], NICK)
-                        else:
-                            msgTime = timer
-                            info(line[2], NICK)
+                        info(line[2], NICK)
 
                     elif NICK in message and 'tutorial' in message and ('WEP' or 'wep') in message:
-                        if timer <= (timer + 3):
-                            sleep(3)
-                            msgTime = timer
-                            aircrack(line[2])
-                        else:
-                            msgTime = timer
-                            aircrack(line[2])
+                        aircrack(line[2])
 
                     elif NICK in message and 'insult' in message:
-                        if timer <= (timer + 3):
-                            sleep(3)
-                            for users in userList:
-                                for nickname in users:
-                                    if nickname in message and nickname != NICK and nickname != user:
-                                        msgTime = timer
-                                        insult(line[2], user, nickname)
-                        else:
-                            for users in userList:
-                                for nickname in users:
-                                    if nickname in message and nickname != NICK and nickname != user:
-                                        msgTime = timer
-                                        insult(line[2], user, nickname)
+                        for users in userList:
+                            for nickname in users:
+                                if nickname in message and nickname != NICK and nickname != user:
+                                    insult(line[2], user, nickname)
 
 
                 printOut = user + ' | ' + message

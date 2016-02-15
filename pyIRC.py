@@ -15,7 +15,6 @@ from string import punctuation
 from time import sleep
 import re
 
-
 # Default settings. Hope to change this toward file based rather than hard coded.
 HOST='irc.freenode.net'
 PORT=6697
@@ -117,15 +116,19 @@ def printUrls(urls, CHAN):
     for websites in urls:
         for web in websites:
             #print(web)
-            printUrls = os.system("curl -s %s | grep -iPo '(?<=<title>)(.*)(?=</title>)' > .url" % web)
+            os.system("curl -s %s | grep -iPo '(?<=<title>)(.*)(?=</title>)' > .url" % web)
             inFile = open('.url')
             printUrls = inFile.read()
+            #r = http.request('GET', web)
+            #printUrls = BeautifulSoup(r.data, 'html.parser')
+            #print(printUrls.title.string)
             tinyurl = os.system('curl -s http://tinyurl.com/api-create.php?url=%s > .tinyurl' % web)
             tinyInFile = open('.tinyurl')
             tinyurl = tinyInFile.read()
+            #print(tinyurl)
             if '&#171;' in printUrls:
                 printUrls = re.sub('&#171;', '«', printUrls)
-            sendMe = '%s - %s' % (str(printUrls.strip()), str(tinyurl.strip()))
+            sendMe = '%s - %s' % (printUrls.strip(), tinyurl.strip())
             #print(sendMe)
             sendMessage(('^ %s ^' % sendMe), CHAN)
     del urlList[:]

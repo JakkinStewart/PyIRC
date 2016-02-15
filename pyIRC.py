@@ -13,19 +13,10 @@ import os
 import json
 from string import punctuation
 from time import sleep
+import re
 
 
-
-
-"""# Asks user for input.
-host = '' #input("Enter IRC server [Freenode]: ")
-port = '' #input("Enter port [6697]: ")
-nick = '' #input("Enter nick [PythonIRCBot]: ")
-chan = '' #input("Enter channel [#temp]: ")
-Ssl = '' #input("Do you want to use SSL? [Y/n]: ")
-logging = '' #input("Do you want to enable logging? [Y/n]: ")"""
-log = './'
-
+# Default settings. Hope to change this toward file based rather than hard coded.
 HOST='irc.freenode.net'
 PORT=6697
 NICK='DovahBot'
@@ -36,29 +27,38 @@ sslEnable = 'y'
 PASS = 'asdfghjkl'
 IDENT='dovahkiin'
 REALNAME='Python IRC Client'
+urlList = []
 
+# Connections. Automatically connects through ssl. Hope to make a function of these later.
+# Might just make it a class, but don't want to deal with it right now.
 ssL=socket.socket()
 ssL.connect((HOST,PORT))
-
 s = ssl.wrap_socket(ssL)
 
+# Sends the required stuffs to the server. Password, nickname, etc.
 def connectToServer(passwd, nick, ident, host, realname):
     s.send(("PASS %s\r\n" % passwd).encode('utf-8'))
     s.send(('NICK %s\r\n' % nick).encode('utf-8'))
     s.send(('USER %s %s bla : %s\r\n' % (ident, host, realname)).encode('utf-8'))
 
+# This simplifies sending messages. Its a pain to type in everything over and over.
 def sendMessage(msg, CHAN):
     s.send(("PRIVMSG %s :%s\r\n" % (CHAN, msg)).encode('utf-8'))
 
+# Prints out basic info on the bot
 def info(CHAN, NICK):
     sendMessage(("I'm %s, written by JakkinStewart on GitHub. Right now I can dispense advice using the adviceslip.com API. Hopefully, I will be extended to help train new ISSO members.\r\n" % NICK), CHAN)
 
+# Prints out the commands people can send to the bot.
 def helpMe(CHAN):
     sendMessage(("'advice': Mentioning the word 'advice' to me will cause me to give you advice.\r\n"), CHAN)
     sendMessage(("'info'  : Mentioning the word 'info' to me will give general info on me. (Not much yet.)\r\n"), CHAN)
     sendMessage(("'Hello' : Saying hi to me will make me say hi back.\r\n"), CHAN)
     sendMessage(("'help'  : Using the word 'help' with my name will give you this message.\r\n"), CHAN)
+    sendMessage(("'insult': Saying insult to me and the nick of the person you want insulted will make me send an insulting message to them."), CHAN)
+    sendMessage(("I will automatically print out the titles of any URL in the channel that I am in."), CHAN)
 
+# Prints out a simple aircrack tutorial. Requires you to have a tutor on hand to explain it.
 def aircrack(CHAN):
     sendMessage(("Aircrack-ng is a complete suite of tools to assess WiFi network Security.\r\n"), CHAN)
 
@@ -76,6 +76,7 @@ def aircrack(CHAN):
 
     sendMessage(("Presto! You just cracked the key!"), CHAN)
 
+# Prints out random advice
 def advice(CHAN):
     os.system("curl -s http://api.adviceslip.com/advice > .advice")
     inFile = open('.advice', 'r')
@@ -84,6 +85,7 @@ def advice(CHAN):
     sendMessage("%s\r\n" % (parsed_json['slip']['advice']), CHAN)
     os.system('rm .advice')
 
+# Prints out random insults
 def insult(CHAN, insulter, insultee):
     os.system('curl -s http://quandyfactory.com/insult/json > .insult')
     #os.system("""curl -s http://www.randominsults.net/ | grep -a '<td bordercolor="#FFFFFF"><font face="Verdana" size="4"><strong><i>' | sed 's/<td bordercolor="#FFFFFF"><font face="Verdana" size="4"><strong><i>//' | sed 's|</i></strong></font>&nbsp;</td>||' | sed 's/^......//' > .insult""")
@@ -94,35 +96,53 @@ def insult(CHAN, insulter, insultee):
     sendMessage('%s, %s would like you to know something. %s ' % (insultee, insulter, parsed_json['insult']), CHAN)
     os.system('rm .insult')
 
+# Detects if a url is present and returns true if they are
+def urls(message):
+    url = message
+    urlHttp = re.findall('http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', url)
+    urlWWW = re.findall('www.(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', url)
+    if urlHttp != []:
+        urlList.append(urlHttp)
+    elif urlWWW != []:
+        urlList.append(urlWWW)
+    #print(url)
+    if urlList != []:
+        return True
+    else:
+        return False
+
+# Finds the title of the web page and prints it out. Trying to add a tinyurl to the title as well.
+def printUrls(urls, CHAN):
+    #print(urls)
+    for websites in urls:
+        for web in websites:
+            #print(web)
+            printUrls = os.system("curl -s %s | grep -iPo '(?<=<title>)(.*)(?=</title>)' > .url" % web)
+            inFile = open('.url')
+            printUrls = inFile.read()
+            tinyurl = os.system('curl -s http://tinyurl.com/api-create.php?url=%s > .tinyurl' % web)
+            tinyInFile = open('.tinyurl')
+            tinyurl = tinyInFile.read()
+            if '&#171;' in printUrls:
+                printUrls = re.sub('&#171;', '«', printUrls)
+            sendMe = '%s - %s' % (str(printUrls.strip()), str(tinyurl.strip()))
+            #print(sendMe)
+            sendMessage(('^ %s ^' % sendMe), CHAN)
+    del urlList[:]
 
 # Begins readbuffer.
 # Taken from http://archive.oreilly.com/pub/h/1968:
 # You need a readbuffer because your might not always be able to read complete IRC commands from the server (due to a saturated Internet connection, operating system limits, etc).
 #print("Connecting...")
 
-
-
-
-
 readbuffer=''
-
-# If SSL was enabled, wrap the socket in SSL.
-#if sslEnable.lower() == 'y':
-
-# Otherwise, don't wrap anything.
-#elif sslEnable.lower() == 'n':
-#    s=socket.socket()
-#    s.connect((HOST,PORT))
-
-# Send messages to the server containing the nick, identity, server, and realname. All messages must be encoded in utf-8.
-#s.send(('PRIVMSG nickserv identify %s %s\r\n' % (NICK, PASS)).encode('utf-8'))
-# Enter an infinite loop.
 
 connectToServer(PASS, NICK, IDENT, HOST, REALNAME)
 userList = []
 count = 0
 chanCount = -1
 counter = 0
+
 for a in CHANNEL:
     counter += 1
 
@@ -165,9 +185,6 @@ while 1:
 
             if line[1] == 'PRIVMSG':
                 #print(line)
-                if line[2] != '##isso-tutorials':
-                    sendMessage('Please join me in ##isso-tutorials.', line[2])
-                    #pass
                 stringy = line[0]
                 temporary = stringy.split('!')
                 user = str(temporary[0])[1:]
@@ -176,6 +193,15 @@ while 1:
                     if x[0] == ':':
                         message += x[1:] + ' '
                     else: message += x + ' '
+
+                if urls(message):
+                    #print(urlList)
+                    printUrls(urlList, line[2])
+                    #print(urlList)
+
+                elif NICK in message and line[2] != '##isso-tutorials':
+                    sendMessage('Please join me in ##isso-tutorials.', line[2])
+                    #pass
 
                 y = [''.join(c for c in s if c not in punctuation) for s in y]
 
@@ -204,7 +230,7 @@ while 1:
 
                 printOut = user + ' | ' + message
                 ircChat = printOut +'\n'
-                print(printOut)
+                #print(printOut)
                 logFile.write(ircChat)
                 logFile.flush()
 

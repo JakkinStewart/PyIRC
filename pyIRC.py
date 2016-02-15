@@ -202,7 +202,7 @@ while 1:
                     #print(urlList)
 
                 elif NICK in message and line[2] != '##isso-tutorials':
-                    sendMessage('Please join me in ##isso-tutorials.', line[2])
+                    sendMessage('Please join me in ##isso-tutorials.\r\n', user)
                     #pass
 
                 y = [''.join(c for c in s if c not in punctuation) for s in y]

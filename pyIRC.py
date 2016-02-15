@@ -12,7 +12,7 @@ import ssl
 import os
 import json
 from string import punctuation
-from time import sleep
+import time
 import re
 
 
@@ -28,7 +28,7 @@ PASS = 'asdfghjkl'
 IDENT='dovahkiin'
 REALNAME='Python IRC Client'
 urlList = []
-
+sleep = time.sleep
 # Connections. Automatically connects through ssl. Hope to make a function of these later.
 # Might just make it a class, but don't want to deal with it right now.
 ssL=socket.socket()
@@ -133,8 +133,6 @@ def printUrls(urls, CHAN):
 # Begins readbuffer.
 # Taken from http://archive.oreilly.com/pub/h/1968:
 # You need a readbuffer because your might not always be able to read complete IRC commands from the server (due to a saturated Internet connection, operating system limits, etc).
-#print("Connecting...")
-
 readbuffer=''
 
 connectToServer(PASS, NICK, IDENT, HOST, REALNAME)
@@ -142,6 +140,9 @@ userList = []
 count = 0
 chanCount = -1
 counter = 0
+timer = round(time.time())
+msgTime = timer - 3
+print("Connecting...")
 
 for a in CHANNEL:
     counter += 1
@@ -153,7 +154,7 @@ for i in range(counter):
 while 1:
     try:
     # Read 1024 bytes from the server and append it to the readbuffer.
-        readbuffer=readbuffer + s.recv(1024).decode()
+        readbuffer=readbuffer + s.recv(4096).decode()
         temp=readbuffer.split('\n')
         readbuffer=temp.pop()
         for line in temp:
@@ -200,37 +201,82 @@ while 1:
                     #print(urlList)
 
                 elif NICK in message and line[2] != '##isso-tutorials':
-                    sendMessage('Please join me in ##isso-tutorials.', line[2])
-                    #pass
+                    if msgTime <= (timer + 3):
+                        sleep(3)
+                        msgTime = timer
+                        sendMessage('Please join me in ##isso-tutorials.', line[2])
+                    else:
+                        msgTime = timer
+                        sendMessage('Please join me in ##isso-tutorials.', line[2])
 
                 y = [''.join(c for c in s if c not in punctuation) for s in y]
 
                 if line[2] == '##isso-tutorials':
                     if NICK in message and ('Hello' or 'hello' or 'hi' or 'Hi' or 'HI') in message:
-                        sendMessage(("Hello, %s\r\n" % user), line[2])
+                        if timer <= (timer + 3):
+                            sleep(3)
+                            msgTime = timer
+                            sendMessage(("Hello, %s\r\n" % user), line[2])
+                        else:
+                            msgTime = timer
+                            sendMessage(("Hello, %s\r\n" % user), line[2])
+
 
                     if NICK in message and 'advice' in message:
-                        advice(line[2])
+                        if timer <= (timer + 3):
+                            sleep(3)
+                            msgTime = timer
+                            advice(line[2])
+                        else:
+                            msgTime = timer
+                            advice(line[2])
 
                     elif NICK in message and 'help' in message:
-                        helpMe(line[2])
+                        if timer <= (timer + 3):
+                            sleep(3)
+                            msgTime = timer
+                            helpMe(line[2])
+                        else:
+                            msgTime = timer
+                            helpMe(line[2])
 
                     elif NICK in message and 'info' in message:
-                        info(line[2], NICK)
+                        if timer <= (timer + 3):
+                            sleep(3)
+                            msgTime = timer
+                            info(line[2], NICK)
+                        else:
+                            msgTime = timer
+                            info(line[2], NICK)
 
                     elif NICK in message and 'tutorial' in message and ('WEP' or 'wep') in message:
-                        aircrack(line[2])
+                        if timer <= (timer + 3):
+                            sleep(3)
+                            msgTime = timer
+                            aircrack(line[2])
+                        else:
+                            msgTime = timer
+                            aircrack(line[2])
 
                     elif NICK in message and 'insult' in message:
-                        for users in userList:
-                            for nickname in users:
-                                if nickname in message and nickname != NICK and nickname != user:
-                                    insult(line[2], user, nickname)
+                        if timer <= (timer + 3):
+                            sleep(3)
+                            for users in userList:
+                                for nickname in users:
+                                    if nickname in message and nickname != NICK and nickname != user:
+                                        msgTime = timer
+                                        insult(line[2], user, nickname)
+                        else:
+                            for users in userList:
+                                for nickname in users:
+                                    if nickname in message and nickname != NICK and nickname != user:
+                                        msgTime = timer
+                                        insult(line[2], user, nickname)
 
 
                 printOut = user + ' | ' + message
                 ircChat = printOut +'\n'
-                #print(printOut)
+                print(printOut)
                 logFile.write(ircChat)
                 logFile.flush()
 

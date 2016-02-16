@@ -207,13 +207,13 @@ while 1:
                     #print(urlList)
 
                 elif NICK in message and line[2] != '##isso-tutorials':
-                    sendMessage('Please join me in ##isso-tutorials.\r\n', user)
+                    sendMessage('Please join me in ##isso-tutorials. If you need help, mention the work "help" the channel and I will print out a list of commands.\r\n', user)
                     #pass
 
                 y = [''.join(c for c in s if c not in punctuation) for s in y]
 
                 if line[2] == '##isso-tutorials':
-                    if NICK in message and ('Hello' or 'hello' or 'hi' or 'Hi' or 'HI') in message:
+                    if NICK in message and 'Hello' in message or 'hello' in message or 'hi' in message or 'Hi'in message or 'HI' in message:
                         sendMessage(("Hello, %s\r\n" % user), line[2])
 
                     if NICK in message and 'advice' in message:

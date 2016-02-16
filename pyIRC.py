@@ -167,7 +167,7 @@ while 1:
         for line in temp:
             line=line.rstrip()
             line=line.split()
-            print(line)
+            #print(line)
             if line[0]=='PING':
                 s.send(("PONG %s\r\n" % line[1]).encode('utf-8'))
             if (line[1]=='MODE'):
@@ -207,7 +207,7 @@ while 1:
                     #print(urlList)
 
                 elif NICK in message and line[2] != '##isso-tutorials':
-                    sendMessage('Please join me in ##isso-tutorials. If you need help, mention the work "help" the channel and I will print out a list of commands.\r\n', user)
+                    sendMessage('Please join me in ##isso-tutorials. If you need help, mention my name and the word "help" the channel and I will print out a list of commands.\r\n', user)
                     #helpMe(user)
                     #pass
 

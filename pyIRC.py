@@ -18,7 +18,7 @@ import re
 # Default settings. Hope to change this toward file based rather than hard coded.
 HOST='irc.freenode.net'
 PORT=6697
-NICK='DovahBot'
+NICK='DovaBot'
 CHANNEL=['##isso-tutorials', '#temp']
 LOG = ''
 logFile = open('%s.log' % LOG, 'a')
@@ -122,15 +122,20 @@ def printUrls(urls, CHAN):
             #r = http.request('GET', web)
             #printUrls = BeautifulSoup(r.data, 'html.parser')
             #print(printUrls.title.string)
-            tinyurl = os.system('curl -s http://tinyurl.com/api-create.php?url=%s > .tinyurl' % web)
+            tinyurl = os.system("""curl -s curl 'https://www.googleapis.com/urlshortener/v1/url?key=AIzaSyAYRyJuXmfWHgc6_lWjmJ8tpE8A932y9i8' -H 'Content-Type: application/json' -d '{"longUrl": "%s"}' > .tinyurl""" % web)
             tinyInFile = open('.tinyurl')
-            tinyurl = tinyInFile.read()
-            #print(tinyurl)
-            if '&#171;' in printUrls:
-                printUrls = re.sub('&#171;', '«', printUrls)
-            sendMe = '%s - %s' % (printUrls.strip(), tinyurl.strip())
-            #print(sendMe)
-            sendMessage(('^ %s ^' % sendMe), CHAN)
+            jsonAttempt = tinyInFile.read()
+            try:
+                tinyurl = json.loads(jsonAttempt)
+                #print(tinyurl["id"])
+                #print(tinyurl)
+                if '&#171;' in printUrls:
+                    printUrls = re.sub('&#171;', '«', printUrls)
+                sendMe = '%s - %s' % (printUrls.strip(), tinyurl['id'])
+                #print(sendMe)
+                sendMessage(('^ %s ^' % sendMe), CHAN)
+            except KeyError:
+                pass
     del urlList[:]
 
 # Begins readbuffer.

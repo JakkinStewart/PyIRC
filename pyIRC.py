@@ -18,7 +18,7 @@ import re
 # Default settings. Hope to change this toward file based rather than hard coded.
 HOST='irc.freenode.net'
 PORT=6697
-NICK='DovaBot'
+NICK='DovahBot'
 CHANNEL=['##isso-tutorials', '#temp']
 LOG = ''
 logFile = open('%s.log' % LOG, 'a')

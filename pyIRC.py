@@ -50,11 +50,12 @@ def info(CHAN, NICK):
 
 # Prints out the commands people can send to the bot.
 def helpMe(CHAN):
-    sendMessage(("'advice': Mentioning the word 'advice' to me will cause me to give you advice.\r\n"), CHAN)
-    sendMessage(("'info'  : Mentioning the word 'info' to me will give general info on me. (Not much yet.)\r\n"), CHAN)
-    sendMessage(("'Hello' : Saying hi to me will make me say hi back.\r\n"), CHAN)
-    sendMessage(("'help'  : Using the word 'help' with my name will give you this message.\r\n"), CHAN)
-    sendMessage(("'insult': Saying insult to me and the nick of the person you want insulted will make me send an insulting message to them."), CHAN)
+    sendMessage(("'advice'  : Mentioning the word 'advice' to me will cause me to give you advice.\r\n"), CHAN)
+    sendMessage(("'info'    : Mentioning the word 'info' to me will give general info on me. (Not much yet.)\r\n"), CHAN)
+    sendMessage(("'Hello'   : Saying hi to me will make me say hi back.\r\n"), CHAN)
+    sendMessage(("'help'    : Using the word 'help' with my name will give you this message.\r\n"), CHAN)
+    sendMessage(("'insult'  : Saying insult to me and the nick of the person you want insulted will make me send an insulting message to them."), CHAN)
+    sendMessage(("'tutorial': Saying 'tutorial' and 'wep' to me will give you a short tutorial on cracking wep with aircrack. I'm hoping to add more tutorials in the future."), CHAN)
     sendMessage(("I will automatically print out the titles of any URL in the channel that I am in."), CHAN)
 
 # Prints out a simple aircrack tutorial. Requires you to have a tutor on hand to explain it.
@@ -166,14 +167,13 @@ while 1:
         for line in temp:
             line=line.rstrip()
             line=line.split()
-            #print(line)
+            print(line)
             if line[0]=='PING':
                 s.send(("PONG %s\r\n" % line[1]).encode('utf-8'))
             if (line[1]=='MODE'):
                 for channel in CHANNEL:
                     s.send(("JOIN %s\r\n" % channel).encode('utf-8'))
                 print("Connected!")
-
             try:
                 if line[3] == '=':
                     for channels in line[4:]:
@@ -208,6 +208,7 @@ while 1:
 
                 elif NICK in message and line[2] != '##isso-tutorials':
                     sendMessage('Please join me in ##isso-tutorials. If you need help, mention the work "help" the channel and I will print out a list of commands.\r\n', user)
+                    #helpMe(user)
                     #pass
 
                 y = [''.join(c for c in s if c not in punctuation) for s in y]
@@ -233,7 +234,6 @@ while 1:
                             for nickname in users:
                                 if nickname in message and nickname != NICK and nickname != user:
                                     insult(line[2], user, nickname)
-
 
                 printOut = user + ' | ' + message
                 ircChat = printOut +'\n'

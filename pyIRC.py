@@ -19,7 +19,7 @@ import re
 HOST='irc.freenode.net'
 PORT=6697
 NICK='DovahBot'
-CHANNEL=['##isso-tutorials', '#temp']
+CHANNEL=['##isso-mnsu', '##isso-tutorials', '#temp']
 LOG = ''
 logFile = open('%s.log' % LOG, 'a')
 sslEnable = 'y'
@@ -129,7 +129,9 @@ def printUrls(urls, CHAN):
             try:
                 tinyurl = json.loads(jsonAttempt)
                 #print(tinyurl["id"])
-                #print(tinyurl)
+
+                if '&#x27;' in printUrls:
+                    printUrls = re.sub('&#x27;', "'", printUrls)
                 if '&#171;' in printUrls:
                     printUrls = re.sub('&#171;', '«', printUrls)
                 sendMe = '%s - %s' % (printUrls.strip(), tinyurl['id'])

@@ -19,7 +19,7 @@ import re
 HOST='irc.freenode.net'
 PORT=6697
 NICK='DovahBot'
-CHANNEL=['##isso-mnsu', '##isso-tutorials', '#temp']
+CHANNEL=['##isso-tutorials', '#temp']
 LOG = ''
 logFile = open('%s.log' % LOG, 'a')
 sslEnable = 'y'
@@ -46,7 +46,7 @@ def sendMessage(msg, CHAN):
 
 # Prints out basic info on the bot
 def info(CHAN, NICK):
-    sendMessage(("I'm %s, written by JakkinStewart on GitHub. Right now I can dispense advice using the adviceslip.com API. Hopefully, I will be extended to help train new ISSO members.\r\n" % NICK), CHAN)
+    sendMessage(("I'm %s, written by JakkinStewart on GitHub (https://github.com/JakkinStewart). Right now I can dispense advice using the adviceslip.com API and insult other users with the quandyfactory insult generator. I have a simple WEP tutorial at the moment. Hopefully, I will be updated to include more tutorials.\r\n" % NICK), CHAN)
 
 # Prints out the commands people can send to the bot.
 def helpMe(CHAN):
@@ -244,7 +244,8 @@ while 1:
                 logFile.flush()
 
     except KeyboardInterrupt:
-        s.send(("QUIT").encode("utf-8"))
+        for i in CHANNEL:
+            s.send(("QUIT %s :I'm outta here!\r\n" % i).encode("utf-8"))
         logFile.write('\nClosed\n')
         logFile.flush()
         print()

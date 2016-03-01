@@ -134,6 +134,9 @@ def printUrls(urls, CHAN):
                     printUrls = re.sub('&#x27;', "'", printUrls)
                 if '&#171;' in printUrls:
                     printUrls = re.sub('&#171;', '«', printUrls)
+                if '&mdash;' in printUrls:
+                    printUrls = re.sub('&mdash;', '-', printUrls)
+
                 sendMe = '%s - %s' % (printUrls.strip(), tinyurl['id'])
                 #print(sendMe)
                 sendMessage(('^ %s ^' % sendMe), CHAN)

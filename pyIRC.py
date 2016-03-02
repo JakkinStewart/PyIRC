@@ -21,7 +21,7 @@ PORT=6697
 NICK='DovahBot'
 CHANNEL=['##isso-tutorials', '#temp']
 LOG = ''
-logFile = open('%s.log' % LOG, 'a')
+#logFile = open('%s.log' % LOG, 'a')
 sslEnable = 'y'
 PASS = 'asdfghjkl'
 IDENT='dovahkiin'
@@ -123,11 +123,11 @@ def printUrls(urls, CHAN):
             #r = http.request('GET', web)
             #printUrls = BeautifulSoup(r.data, 'html.parser')
             #print(printUrls.title.string)
-            tinyurl = os.system("""curl -s curl 'https://www.googleapis.com/urlshortener/v1/url?key=AIzaSyAYRyJuXmfWHgc6_lWjmJ8tpE8A932y9i8' -H 'Content-Type: application/json' -d '{"longUrl": "%s"}' > .tinyurl""" % web)
-            tinyInFile = open('.tinyurl')
-            jsonAttempt = tinyInFile.read()
+            #tinyurl = os.system("""curl -s curl 'https://www.googleapis.com/urlshortener/v1/url?key=AIzaSyAYRyJuXmfWHgc6_lWjmJ8tpE8A932y9i8' -H 'Content-Type: application/json' -d '{"longUrl": "%s"}' > .tinyurl""" % web)
+            #tinyInFile = open('.tinyurl')
+            #jsonAttempt = tinyInFile.read()
             try:
-                tinyurl = json.loads(jsonAttempt)
+                #tinyurl = json.loads(jsonAttempt)
                 #print(tinyurl["id"])
 
                 if '&#x27;' in printUrls:
@@ -137,7 +137,7 @@ def printUrls(urls, CHAN):
                 if '&mdash;' in printUrls:
                     printUrls = re.sub('&mdash;', '-', printUrls)
 
-                sendMe = '%s - %s' % (printUrls.strip(), tinyurl['id'])
+                sendMe = '%s' % (printUrls.strip()) #, tinyurl['id'])
                 #print(sendMe)
                 sendMessage(('^ %s ^' % sendMe), CHAN)
             except KeyError:
@@ -211,7 +211,7 @@ while 1:
                     printUrls(urlList, line[2])
                     #print(urlList)
 
-                elif NICK in message and line[2] != '##isso-tutorials':
+                if NICK in message and line[2] != '##isso-tutorials' and ("Hello" in message or 'hello' in message or 'hi' in message or 'Hi' in message or 'HI' in message):
                     sendMessage('Please join me in ##isso-tutorials. If you need help, mention my name and the word "help" the channel and I will print out a list of commands.\r\n', user)
                     #helpMe(user)
                     #pass
@@ -231,7 +231,7 @@ while 1:
                     elif NICK in message and 'info' in message:
                         info(line[2], NICK)
 
-                    elif NICK in message and 'tutorial' in message and ('WEP' or 'wep') in message:
+                    elif NICK in message and 'tutorial' in message and 'WEP' in message or 'wep' in message:
                         aircrack(line[2])
 
                     elif NICK in message and 'insult' in message:
@@ -243,13 +243,13 @@ while 1:
                 printOut = user + ' | ' + message
                 ircChat = printOut +'\n'
                 print(printOut)
-                logFile.write(ircChat)
-                logFile.flush()
+                #logFile.write(ircChat)
+                #logFile.flush()
 
     except KeyboardInterrupt:
         for i in CHANNEL:
-            s.send(("QUIT %s :I'm outta here!\r\n" % i).encode("utf-8"))
-        logFile.write('\nClosed\n')
-        logFile.flush()
+            s.send(("QUIT I'm outta here!\r\n" % i).encode("utf-8"))
+        #logFile.write('\nClosed\n')
+        #logFile.flush()
         print()
         exit('Closing')

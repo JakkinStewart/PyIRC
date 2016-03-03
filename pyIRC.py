@@ -19,7 +19,7 @@ import re
 HOST='irc.freenode.net'
 PORT=6697
 NICK='DovahBot'
-CHANNEL=['##isso-tutorials', '#temp']
+CHANNEL=['##isso-mnsu', '##isso-tutorials', '#temp']
 LOG = ''
 #logFile = open('%s.log' % LOG, 'a')
 sslEnable = 'y'
@@ -123,11 +123,11 @@ def printUrls(urls, CHAN):
             #r = http.request('GET', web)
             #printUrls = BeautifulSoup(r.data, 'html.parser')
             #print(printUrls.title.string)
-            #tinyurl = os.system("""curl -s curl 'https://www.googleapis.com/urlshortener/v1/url?key=AIzaSyAYRyJuXmfWHgc6_lWjmJ8tpE8A932y9i8' -H 'Content-Type: application/json' -d '{"longUrl": "%s"}' > .tinyurl""" % web)
-            #tinyInFile = open('.tinyurl')
-            #jsonAttempt = tinyInFile.read()
+            tinyurl = os.system("""curl -s curl 'https://www.googleapis.com/urlshortener/v1/url?key=AIzaSyAYRyJuXmfWHgc6_lWjmJ8tpE8A932y9i8' -H 'Content-Type: application/json' -d '{"longUrl": "%s"}' > .tinyurl""" % web)
+            tinyInFile = open('.tinyurl')
+            jsonAttempt = tinyInFile.read()
             try:
-                #tinyurl = json.loads(jsonAttempt)
+                tinyurl = json.loads(jsonAttempt)
                 #print(tinyurl["id"])
 
                 if '&#x27;' in printUrls:
@@ -137,7 +137,7 @@ def printUrls(urls, CHAN):
                 if '&mdash;' in printUrls:
                     printUrls = re.sub('&mdash;', '-', printUrls)
 
-                sendMe = '%s' % (printUrls.strip()) #, tinyurl['id'])
+                sendMe = '%s - %s' % (printUrls.strip(), tinyurl['id'])
                 #print(sendMe)
                 sendMessage(('^ %s ^' % sendMe), CHAN)
             except KeyError:

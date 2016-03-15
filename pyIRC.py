@@ -19,7 +19,7 @@ import re
 HOST='irc.freenode.net'
 PORT=6697
 NICK='DovahBot'
-CHANNEL=['##isso-mnsu', '##isso-tutorials', '#temp']
+CHANNEL=['##isso-tutorials', '#temp']
 LOG = ''
 #logFile = open('%s.log' % LOG, 'a')
 sslEnable = 'y'
@@ -211,7 +211,7 @@ while 1:
                     printUrls(urlList, line[2])
                     #print(urlList)
 
-                if NICK in message and line[2] != '##isso-tutorials' and ("Hello" in message or 'hello' in message or 'hi' in message or 'Hi' in message or 'HI' in message):
+                if NICK in message and line[2] != '##isso-tutorials' and "Hello" in message or 'hello' in message or 'hi' in message or 'Hi' in message or 'HI' in message:
                     sendMessage('Please join me in ##isso-tutorials. If you need help, mention my name and the word "help" the channel and I will print out a list of commands.\r\n', user)
                     #helpMe(user)
                     #pass
@@ -247,8 +247,8 @@ while 1:
                 #logFile.flush()
 
     except KeyboardInterrupt:
-        for i in CHANNEL:
-            s.send(("QUIT I'm outta here!\r\n" % i).encode("utf-8"))
+        #for i in CHANNEL:
+        s.send(("QUIT I'm outta here!\r\n").encode("utf-8"))
         #logFile.write('\nClosed\n')
         #logFile.flush()
         print()

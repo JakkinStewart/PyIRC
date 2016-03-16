@@ -144,6 +144,17 @@ def printUrls(urls, CHAN):
                 pass
     del urlList[:]
 
+def splitChan(input):
+    tempUserList = []
+    for channels in input:
+        if channels[0] == '#':
+            chanCount += 1
+            userList[chanCount].append(channels)
+        elif channels[0] == ':':
+            userList[chanCount].append(channels[1:])
+        else: userList[chanCount].append(channels)
+    return tempUserList
+
 # Begins readbuffer.
 # Taken from http://archive.oreilly.com/pub/h/1968:
 # You need a readbuffer because your might not always be able to read complete IRC commands from the server (due to a saturated Internet connection, operating system limits, etc).
@@ -151,6 +162,7 @@ readbuffer=''
 
 connectToServer(PASS, NICK, IDENT, HOST, REALNAME)
 userList = []
+logList = []
 count = 0
 chanCount = -1
 counter = 0
@@ -158,6 +170,7 @@ print("Connecting...")
 
 for a in CHANNEL:
     counter += 1
+    logList.append("%s.log" % a)
 
 for i in range(counter):
     users = [] * counter
@@ -211,15 +224,16 @@ while 1:
                     printUrls(urlList, line[2])
                     #print(urlList)
 
-                if NICK in message and line[2] != '##isso-tutorials' and "Hello" in message or 'hello' in message or 'hi' in message or 'Hi' in message or 'HI' in message:
-                    sendMessage('Please join me in ##isso-tutorials. If you need help, mention my name and the word "help" the channel and I will print out a list of commands.\r\n', user)
+                if NICK.lower() in message.lower() and line[2] != '##isso-tutorials':
+                    if ("Hello" in message or 'hello' in message or 'hi' in message or 'Hi' in message or 'HI' in message):
+                        sendMessage('Please join me in ##isso-tutorials. If you need help, mention my name and the word "help" the channel and I will print out a list of commands.\r\n', user)
                     #helpMe(user)
                     #pass
 
                 y = [''.join(c for c in s if c not in punctuation) for s in y]
 
                 if line[2] == '##isso-tutorials':
-                    if NICK in message and 'Hello' in message or 'hello' in message or 'hi' in message or 'Hi'in message or 'HI' in message:
+                    if NICK.lower() in message.lower() and ('Hello' in message or 'hello' in message or 'hi' in message or 'Hi'in message or 'HI' in message):
                         sendMessage(("Hello, %s\r\n" % user), line[2])
 
                     if NICK in message and 'advice' in message:
@@ -240,8 +254,14 @@ while 1:
                                 if nickname in message and nickname != NICK and nickname != user:
                                     insult(line[2], user, nickname)
 
-                printOut = user + ' | ' + message
-                ircChat = printOut +'\n'
+                printOut = user + ' | ' + message + '\n'
+                for a in logList:
+                    if line[2] in a:
+                        i = open(a, "a")
+                        i.write(printOut)
+                        i.close()
+
+                ircChat = "[" + line[2] + "] " + printOut
                 print(printOut)
                 #logFile.write(ircChat)
                 #logFile.flush()
@@ -249,7 +269,10 @@ while 1:
     except KeyboardInterrupt:
         #for i in CHANNEL:
         s.send(("QUIT I'm outta here!\r\n").encode("utf-8"))
-        #logFile.write('\nClosed\n')
-        #logFile.flush()
+        for a in logList:
+            i = open(a, "a")
+            i.write('\nClosed\n')
+            i.flush()
+            i.close()
         print()
         exit('Closing')

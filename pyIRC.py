@@ -272,7 +272,7 @@ while 1:
 
     except KeyboardInterrupt:
         #for i in CHANNEL:
-        s.send(("QUIT I'm outta here!\r\n").encode("utf-8"))
+        s.send(("QUIT %s\r\n" % "I'm outta here!").encode("utf-8"))
         for a in logList:
             i = open(a, "a")
             i.write('\nClosed\n')

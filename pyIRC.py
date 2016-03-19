@@ -159,7 +159,7 @@ def splitChan(input):
 # Taken from http://archive.oreilly.com/pub/h/1968:
 # You need a readbuffer because your might not always be able to read complete IRC commands from the server (due to a saturated Internet connection, operating system limits, etc).
 readbuffer=''
-
+debug = "debug.log"
 connectToServer(PASS, NICK, IDENT, HOST, REALNAME)
 userList = []
 logList = []
@@ -186,6 +186,10 @@ while 1:
             line=line.rstrip()
             line=line.split()
             #print(line)
+            dbg = open(debug, "a")
+            dbg.write(line)
+            dbg.close()
+
             if line[0]=='PING':
                 s.send(("PONG %s\r\n" % line[1]).encode('utf-8'))
             if (line[1]=='MODE'):

@@ -19,7 +19,7 @@ import re
 HOST='irc.freenode.net'
 PORT=6697
 NICK='DovahBot'
-CHANNEL=['##isso-tutorials', '#temp']
+CHANNEL=['##isso-mnsu', '##isso-tutorials', '#temp']
 LOG = ''
 #logFile = open('%s.log' % LOG, 'a')
 sslEnable = 'y'
@@ -187,7 +187,9 @@ while 1:
             line=line.split()
             #print(line)
             dbg = open(debug, "a")
-            dbg.write(str(line)) 
+            for i in line:
+                dbg.write(i + ' ')
+            dbg.write('\n')
             dbg.close()
 
             if line[0]=='PING':
@@ -258,21 +260,21 @@ while 1:
                                 if nickname in message and nickname != NICK and nickname != user:
                                     insult(line[2], user, nickname)
 
-                printOut = user + ' | ' + message + '\n'
+                printOut = user + ' | ' + message
                 for a in logList:
                     if line[2] in a:
                         i = open(a, "a")
-                        i.write(printOut)
+                        i.write(printOut + '\n')
                         i.close()
 
-                ircChat = "[" + line[2] + "] " + printOut
+                ircChat = "[" + line[2] + "] " + printOut + '\n'
                 print(printOut)
                 #logFile.write(ircChat)
                 #logFile.flush()
 
     except KeyboardInterrupt:
         #for i in CHANNEL:
-        s.send(("QUIT 'I'm outta here!'\r\n").encode("utf-8"))
+        s.send(("QUIT I'm outta here!\r\n").encode("utf-8"))
         for a in logList:
             i = open(a, "a")
             i.write('\nClosed\n')

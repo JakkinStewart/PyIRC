@@ -43,6 +43,11 @@ def connectToServer(passwd, nick, ident, host, realname):
 # This simplifies sending messages. Its a pain to type in everything over and over.
 def sendMessage(msg, CHAN):
     s.send(("PRIVMSG %s :%s\r\n" % (CHAN, msg)).encode('utf-8'))
+    for a in logList:
+        if CHAN in a:
+            i = open(a, "a")
+            i.write(NICK + ' | ' + msg + '\n')
+            i.close()
 
 # Prints out basic info on the bot
 def info(CHAN, NICK):
@@ -187,10 +192,14 @@ while 1:
             line=line.split()
             #print(line)
             dbg = open(debug, "a")
-            for i in line:
-                dbg.write(i + ' ')
-            dbg.write('\n')
-            dbg.close()
+            try:
+                for i in line:
+                    dbg.write(i + ' ')
+                dbg.write('\n')
+                dbg.close()
+            except UnicodeEncodeError:
+                pass
+
 
             if line[0]=='PING':
                 s.send(("PONG %s\r\n" % line[1]).encode('utf-8'))
@@ -224,14 +233,23 @@ while 1:
                     if x[0] == ':':
                         message += x[1:] + ' '
                     else: message += x + ' '
+                printOut = user + " | " + message
+                for a in logList:
+                    if line[2] in a:
+                        i = open(a, 'a')
+                        i.write(printOut + '\n')
+                        i.close()
 
-                if urls(message):
+                #if urls(message):
                     #print(urlList)
-                    printUrls(urlList, line[2])
+                    #printUrls(urlList, line[2])
                     #print(urlList)
 
                 if NICK.lower() in message.lower() and line[2] != '##isso-tutorials':
-                    if ("Hello" in message or 'hello' in message or 'hi' in message or 'Hi' in message or 'HI' in message):
+                    if line[2] == '##isso-mnsu':
+                        pass
+                    
+                    elif ("Hello" in message or 'hello' in message or 'hi' in message or 'Hi' in message or 'HI' in message):
                         sendMessage('Please join me in ##isso-tutorials. If you need help, mention my name and the word "help" the channel and I will print out a list of commands.\r\n', user)
                     #helpMe(user)
                     #pass
@@ -242,39 +260,39 @@ while 1:
                     if NICK.lower() in message.lower() and ('Hello' in message or 'hello' in message or 'hi' in message or 'Hi'in message or 'HI' in message):
                         sendMessage(("Hello, %s\r\n" % user), line[2])
 
-                    if NICK in message and 'advice' in message:
+                    if NICK.lower() in message.lower() and 'advice' in message.lower():
                         advice(line[2])
 
-                    elif NICK in message and 'help' in message:
+                    elif NICK.lower() in message.lower() and 'help' in message.lower():
                         helpMe(line[2])
 
-                    elif NICK in message and 'info' in message:
+                    elif NICK.lower() in message.lower() and 'info' in message.lower():
                         info(line[2], NICK)
 
-                    elif NICK in message and 'tutorial' in message and 'WEP' in message or 'wep' in message:
+                    elif NICK.lower() in message.lower() and 'tutorial' in message.lower() and 'wep' in message.lower():
                         aircrack(line[2])
 
-                    elif NICK in message and 'insult' in message:
+                    elif NICK.lower() in message.lower() and 'insult' in message.lower():
                         for users in userList:
                             for nickname in users:
-                                if nickname in message and nickname != NICK and nickname != user:
+                                if nickname.lower() in message.lower() and nickname != NICK and nickname != user:
                                     insult(line[2], user, nickname)
 
-                printOut = user + ' | ' + message
-                for a in logList:
-                    if line[2] in a:
-                        i = open(a, "a")
-                        i.write(printOut + '\n')
-                        i.close()
+                #printOut = user + ' | ' + message
+                #for a in logList:
+                    #if line[2] in a:
+                        #i = open(a, "a")
+                        #i.write(printOut + '\n')
+                        #i.close()
 
-                ircChat = "[" + line[2] + "] " + printOut + '\n'
+                #ircChat = "[" + line[2] + "] " + printOut + '\n'
                 print(printOut)
                 #logFile.write(ircChat)
                 #logFile.flush()
 
     except KeyboardInterrupt:
         #for i in CHANNEL:
-        s.send(("QUIT I'm outta here!\r\n").encode("utf-8"))
+        s.send(("QUIT \r\n").encode("utf-8"))
         for a in logList:
             i = open(a, "a")
             i.write('\nClosed\n')

@@ -18,8 +18,8 @@ import re
 # Default settings. Hope to change this toward file based rather than hard coded.
 HOST='irc.freenode.net'
 PORT=6697
-NICK='DovahBot'
-CHANNEL=['##isso-mnsu', '##isso-tutorials', '#temp']
+NICK='DovaBot'
+CHANNEL=['##isso-tutorials', '#temp']
 LOG = ''
 #logFile = open('%s.log' % LOG, 'a')
 sslEnable = 'y'
@@ -149,9 +149,10 @@ def printUrls(urls, CHAN):
                 pass
     del urlList[:]
 
-def splitChan(input):
+# Generates a list of users
+def splitChan(Input):
     tempUserList = []
-    for channels in input:
+    for channels in Input:
         if channels[0] == '#':
             chanCount += 1
             userList[chanCount].append(channels)
@@ -159,6 +160,10 @@ def splitChan(input):
             userList[chanCount].append(channels[1:])
         else: userList[chanCount].append(channels)
     return tempUserList
+
+# Bothers Ohelig
+def botherOhelig(msg, chan):
+    sendMessage('%s' % msg, chan)
 
 # Begins readbuffer.
 # Taken from http://archive.oreilly.com/pub/h/1968:
@@ -190,16 +195,15 @@ while 1:
         for line in temp:
             line=line.rstrip()
             line=line.split()
-            #print(line)
             dbg = open(debug, "a")
             try:
                 for i in line:
                     dbg.write(i + ' ')
                 dbg.write('\n')
                 dbg.close()
+
             except UnicodeEncodeError:
                 pass
-
 
             if line[0]=='PING':
                 s.send(("PONG %s\r\n" % line[1]).encode('utf-8'))
@@ -207,6 +211,7 @@ while 1:
                 for channel in CHANNEL:
                     s.send(("JOIN %s\r\n" % channel).encode('utf-8'))
                 print("Connected!")
+
             try:
                 if line[3] == '=':
                     for channels in line[4:]:
@@ -224,7 +229,6 @@ while 1:
             user = ''
 
             if line[1] == 'PRIVMSG':
-                #print(line)
                 stringy = line[0]
                 temporary = stringy.split('!')
                 user = str(temporary[0])[1:]
@@ -248,16 +252,14 @@ while 1:
                 if NICK.lower() in message.lower() and line[2] != '##isso-tutorials':
                     if line[2] == '##isso-mnsu':
                         pass
-                    
-                    elif ("Hello" in message or 'hello' in message or 'hi' in message or 'Hi' in message or 'HI' in message):
+
+                    elif ('hello' in message.lower() or 'hi' in message.lower()):
                         sendMessage('Please join me in ##isso-tutorials. If you need help, mention my name and the word "help" the channel and I will print out a list of commands.\r\n', user)
-                    #helpMe(user)
-                    #pass
 
                 y = [''.join(c for c in s if c not in punctuation) for s in y]
 
                 if line[2] == '##isso-tutorials':
-                    if NICK.lower() in message.lower() and ('Hello' in message or 'hello' in message or 'hi' in message or 'Hi'in message or 'HI' in message):
+                    if NICK.lower() in message.lower() and ('hello' in message.lower() or 'hi' in message.lower()):
                         sendMessage(("Hello, %s\r\n" % user), line[2])
 
                     if NICK.lower() in message.lower() and 'advice' in message.lower():
@@ -278,20 +280,29 @@ while 1:
                                 if nickname.lower() in message.lower() and nickname != NICK and nickname != user:
                                     insult(line[2], user, nickname)
 
-                #printOut = user + ' | ' + message
-                #for a in logList:
-                    #if line[2] in a:
-                        #i = open(a, "a")
-                        #i.write(printOut + '\n')
-                        #i.close()
+                ohelig = ''
+                sentence = ''
+                if NICK.lower() in message.lower() and ' say to' in message.lower():
+                    #ignore = len(NICK + ' say to ' + name)
+                    for letter in message:
+                        sentence += letter
+                    for category in userList:
+                        for name in category:
+                            if str(name).lower() in sentence.lower() and str(name).lower() != NICK.lower():
+                                if ohelig == '':
+                                    ohelig = name + ' '
+                    ignore = len(NICK + ' say to ' + ohelig)
+                    print(ignore)
+                    print(sentence[ignore:])
+                    botherOhelig(sentence[ignore:], '##isso-mnsu')
+                        #if name in userList:
+                            #sendMessage(name + ', ' + message[ignore:], line[2])
+                            #print(message[ignore:])
+                   #botherOhelig(
 
-                #ircChat = "[" + line[2] + "] " + printOut + '\n'
                 print(printOut)
-                #logFile.write(ircChat)
-                #logFile.flush()
 
     except KeyboardInterrupt:
-        #for i in CHANNEL:
         s.send(("QUIT \r\n").encode("utf-8"))
         for a in logList:
             i = open(a, "a")

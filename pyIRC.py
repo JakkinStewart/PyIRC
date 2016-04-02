@@ -222,11 +222,6 @@ while 1:
 
             try:
                 if line[3] == '=':
-                    #print(line[4:])
-                    #for items in line[4:]:
-                        #print(channel)
-                    #var = splitChan(line[4:])
-                    #print(var)
 
                     for channels in line[4:]:
                         if channels[0] == '#':

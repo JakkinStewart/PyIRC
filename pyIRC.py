@@ -16,22 +16,23 @@ from time import sleep
 import re
 
 # Default settings. Hope to change this toward file based rather than hard coded.
-HOST='irc.freenode.net'
-PORT=6697
-NICK='DovaBot'
-CHANNEL=['##isso-tutorials', '#temp']
-LOG = ''
-#logFile = open('%s.log' % LOG, 'a')
-sslEnable = 'y'
-PASS = 'asdfghjkl'
-IDENT='dovahkiin'
-REALNAME='Python IRC Client'
-urlList = []
+#HOST='irc.freenode.net'
+#PORT=6697
+#NICK='DovaBot'
+#CHANNEL=['##isso-tutorials', '#temp']
+#sslEnable = 'y'
+#PASS = 'asdfghjkl'
+#IDENT='dovahkiin'
+#REALNAME='Python IRC Client'
+#urlList = []
 
+settingsFile = open("./pyIRC.conf", "r")
+config = json.loads(settingsFile.read())
+settings = config['settings']
 # Connections. Automatically connects through ssl. Hope to make a function of these later.
 # Might just make it a class, but don't want to deal with it right now.
 ssL=socket.socket()
-ssL.connect((HOST,PORT))
+ssL.connect((settings['host'], settings['port']))
 s = ssl.wrap_socket(ssL)
 
 # Sends the required stuffs to the server. Password, nickname, etc.
@@ -85,20 +86,20 @@ def aircrack(CHAN):
 def advice(CHAN):
     os.system("curl -s http://api.adviceslip.com/advice > .advice")
     inFile = open('.advice', 'r')
-    jsonAttempt = inFile.read()
-    parsed_json = json.loads(jsonAttempt)
+    parsed_json = json.loads(inFile.read())
     sendMessage("%s\r\n" % (parsed_json['slip']['advice']), CHAN)
     os.system('rm .advice')
 
 # Prints out random insults
-def insult(CHAN, insulter, insultee):
+def insult(CHAN, insultee): #, insultee):
     os.system('curl -s http://quandyfactory.com/insult/json > .insult')
     #os.system("""curl -s http://www.randominsults.net/ | grep -a '<td bordercolor="#FFFFFF"><font face="Verdana" size="4"><strong><i>' | sed 's/<td bordercolor="#FFFFFF"><font face="Verdana" size="4"><strong><i>//' | sed 's|</i></strong></font>&nbsp;</td>||' | sed 's/^......//' > .insult""")
     inFile = open('.insult', 'r')
     #insult = inFile.read()
     jsonAttempt = inFile.read()
     parsed_json = json.loads(jsonAttempt)
-    sendMessage('%s, %s would like you to know something. %s ' % (insultee, insulter, parsed_json['insult']), CHAN)
+    sendMessage('%s, %s ' % (insultee, parsed_json['insult']), CHAN)
+    #%s would like you to know something. %s ' % (insultee, insulter, parsed_json['insult']), CHAN)
     os.system('rm .insult')
 
 # Detects if a url is present and returns true if they are
@@ -125,9 +126,6 @@ def printUrls(urls, CHAN):
             os.system("curl -s %s | grep -iPo '(?<=<title>)(.*)(?=</title>)' > .url" % web)
             inFile = open('.url')
             printUrls = inFile.read()
-            #r = http.request('GET', web)
-            #printUrls = BeautifulSoup(r.data, 'html.parser')
-            #print(printUrls.title.string)
             tinyurl = os.system("""curl -s curl 'https://www.googleapis.com/urlshortener/v1/url?key=AIzaSyAYRyJuXmfWHgc6_lWjmJ8tpE8A932y9i8' -H 'Content-Type: application/json' -d '{"longUrl": "%s"}' > .tinyurl""" % web)
             tinyInFile = open('.tinyurl')
             jsonAttempt = tinyInFile.read()
@@ -150,16 +148,21 @@ def printUrls(urls, CHAN):
     del urlList[:]
 
 # Generates a list of users
-def splitChan(Input):
-    tempUserList = []
-    for channels in Input:
-        if channels[0] == '#':
-            chanCount += 1
-            userList[chanCount].append(channels)
-        elif channels[0] == ':':
-            userList[chanCount].append(channels[1:])
-        else: userList[chanCount].append(channels)
-    return tempUserList
+#def splitChan(Input):
+#    tempUserList = []
+#    chanCount = -1
+#    print(Input)
+#    for channels in Input:
+#        print(channels)
+#        if channels[0] == '#':
+#           chanCount += 1
+#           tempUserList[chanCount].append(channels)
+#        elif channels[0] == ':':
+#            tempUserList[chanCount].append(channels[1:])
+#        else: tempUserList[chanCount].append(channels)
+#    #print(tempUserList)
+#    if tempUserList != [] and tempUserList != [[], []]:
+#        return tempUserList
 
 # Bothers Ohelig
 def botherOhelig(msg, chan):
@@ -170,15 +173,20 @@ def botherOhelig(msg, chan):
 # You need a readbuffer because your might not always be able to read complete IRC commands from the server (due to a saturated Internet connection, operating system limits, etc).
 readbuffer=''
 debug = "debug.log"
-connectToServer(PASS, NICK, IDENT, HOST, REALNAME)
+connectToServer(settings['pass'],
+                settings['nick'],
+                settings['ident'],
+                settings['host'],
+                settings['realname'])
 userList = []
 logList = []
 count = 0
-chanCount = -1
+NICK = settings['nick']
 counter = 0
+chanCount = -1
 print("Connecting...")
 
-for a in CHANNEL:
+for a in settings['channel']:
     counter += 1
     logList.append("%s.log" % a)
 
@@ -188,7 +196,7 @@ for i in range(counter):
 
 while 1:
     try:
-    # Read 1024 bytes from the server and append it to the readbuffer.
+        # Read 1024 bytes from the server and append it to the readbuffer.
         readbuffer=readbuffer + s.recv(4096).decode()
         temp=readbuffer.split('\n')
         readbuffer=temp.pop()
@@ -208,12 +216,18 @@ while 1:
             if line[0]=='PING':
                 s.send(("PONG %s\r\n" % line[1]).encode('utf-8'))
             if (line[1]=='MODE'):
-                for channel in CHANNEL:
+                for channel in settings['channel']:
                     s.send(("JOIN %s\r\n" % channel).encode('utf-8'))
                 print("Connected!")
 
             try:
                 if line[3] == '=':
+                    #print(line[4:])
+                    #for items in line[4:]:
+                        #print(channel)
+                    #var = splitChan(line[4:])
+                    #print(var)
+
                     for channels in line[4:]:
                         if channels[0] == '#':
                             chanCount += 1
@@ -225,6 +239,7 @@ while 1:
             except IndexError:
                 pass
 
+            #print(userList)
             message = ''
             user = ''
 
@@ -278,12 +293,11 @@ while 1:
                         for users in userList:
                             for nickname in users:
                                 if nickname.lower() in message.lower() and nickname != NICK and nickname != user:
-                                    insult(line[2], user, nickname)
+                                    insult(line[2], nickname)
 
                 ohelig = ''
                 sentence = ''
                 if NICK.lower() in message.lower() and ' say to' in message.lower():
-                    #ignore = len(NICK + ' say to ' + name)
                     for letter in message:
                         sentence += letter
                     for category in userList:
@@ -291,14 +305,21 @@ while 1:
                             if str(name).lower() in sentence.lower() and str(name).lower() != NICK.lower():
                                 if ohelig == '':
                                     ohelig = name + ' '
-                    ignore = len(NICK + ' say to ' + ohelig)
-                    print(ignore)
-                    print(sentence[ignore:])
-                    botherOhelig(sentence[ignore:], '##isso-mnsu')
-                        #if name in userList:
-                            #sendMessage(name + ', ' + message[ignore:], line[2])
-                            #print(message[ignore:])
-                   #botherOhelig(
+                    ignore = len(NICK + ' say to ' + ohelig + ' ')
+                    botherOhelig(sentence[ignore:], '#botwar')
+                if 'sleep()' in message.lower():
+                    sleep(120)
+                    botherOhelig("Ohelig, how could ", '#botwar')
+                    sleep(4)
+                    botherOhelig('you want', '#botwar')
+                    sleep(7)
+                    botherOhelig('to kill me?', '#botwar')
+                    sleep(10)
+                    botherOhelig("OHELIG, I DON'T", '#botwar')
+                    sleep(10)
+                    botherOhelig("WANT TO DIE!", '#botwar')
+                    sleep(20)
+                    raise KeyboardInterrupt
 
                 print(printOut)
 

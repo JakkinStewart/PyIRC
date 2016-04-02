@@ -26,7 +26,7 @@ import re
 #REALNAME='Python IRC Client'
 #urlList = []
 
-settingsFile = open("./pyIRC.conf", "r")
+settingsFile = open("./settings.conf", "r")
 config = json.loads(settingsFile.read())
 settings = config['settings']
 # Connections. Automatically connects through ssl. Hope to make a function of these later.
@@ -147,22 +147,23 @@ def printUrls(urls, CHAN):
                 pass
     del urlList[:]
 
-# Generates a list of users
-#def splitChan(Input):
-#    tempUserList = []
-#    chanCount = -1
-#    print(Input)
-#    for channels in Input:
-#        print(channels)
-#        if channels[0] == '#':
-#           chanCount += 1
-#           tempUserList[chanCount].append(channels)
-#        elif channels[0] == ':':
-#            tempUserList[chanCount].append(channels[1:])
-#        else: tempUserList[chanCount].append(channels)
-#    #print(tempUserList)
-#    if tempUserList != [] and tempUserList != [[], []]:
-#        return tempUserList
+# Searches ips with ip-api.com
+def findIP(ips, CHAN):
+    #print(ips)
+    os.system('curl -s http://ip-api.com/json/%s > .ip' % ips)
+    tempIPs = open('.ip', 'r')
+    jsonRead = json.loads(tempIPs.read())
+    if jsonRead['status'] == 'success':
+        sendMessage('ISP:           %s' % jsonRead['isp'], CHAN)
+        sendMessage('Country:       %s' % jsonRead['country'], CHAN)
+        sendMessage('Region:        %s' % jsonRead['regionName'], CHAN)
+        sendMessage('City:          %s' % jsonRead['city'], CHAN)
+        sendMessage('Zipcode:       %s' % jsonRead['zip'], CHAN)
+        sendMessage('Lat/Lon:       %s/%s' % (jsonRead['lat'], jsonRead['lon']), CHAN)
+        sendMessage('Timezone:      %s' % jsonRead['timezone'], CHAN)
+        sendMessage('Organizaton:   %s' % jsonRead['org'], CHAN)
+    elif jsonRead['status'] == 'fail':
+        sendMessage(jsonRead['message'], CHAN)
 
 # Bothers Ohelig
 def botherOhelig(msg, chan):
@@ -268,7 +269,7 @@ while 1:
 
                 y = [''.join(c for c in s if c not in punctuation) for s in y]
 
-                if line[2] == '##isso-tutorials':
+                if line[2] == '##isso-tutorials' or line[2] == '##temp':
                     if NICK.lower() in message.lower() and ('hello' in message.lower() or 'hi' in message.lower()):
                         sendMessage(("Hello, %s\r\n" % user), line[2])
 
@@ -290,6 +291,9 @@ while 1:
                                 if nickname.lower() in message.lower() and nickname != NICK and nickname != user:
                                     insult(line[2], nickname)
 
+                    elif '!ip' in message:
+                        findIP(message[4:], line[2])
+
                 ohelig = ''
                 sentence = ''
                 if NICK.lower() in message.lower() and ' say to' in message.lower():
@@ -301,18 +305,19 @@ while 1:
                                 if ohelig == '':
                                     ohelig = name + ' '
                     ignore = len(NICK + ' say to ' + ohelig + ' ')
-                    botherOhelig(sentence[ignore:], '#botwar')
+                    botherOhelig(sentence[ignore:], '##temp')
+
                 if 'sleep()' in message.lower():
                     sleep(120)
-                    botherOhelig("Ohelig, how could ", '#botwar')
+                    botherOhelig("Ohelig, how could ", '##temp')
                     sleep(4)
-                    botherOhelig('you want', '#botwar')
+                    botherOhelig('you want', '##temp')
                     sleep(7)
-                    botherOhelig('to kill me?', '#botwar')
+                    botherOhelig('to kill me?', '##temp')
                     sleep(10)
-                    botherOhelig("OHELIG, I DON'T", '#botwar')
+                    botherOhelig("OHELIG, I DON'T", '##temp')
                     sleep(10)
-                    botherOhelig("WANT TO DIE!", '#botwar')
+                    botherOhelig("WANT TO DIE!", '##temp')
                     sleep(20)
                     raise KeyboardInterrupt
 

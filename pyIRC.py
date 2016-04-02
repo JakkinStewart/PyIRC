@@ -260,6 +260,9 @@ while 1:
                     #printUrls(urlList, line[2])
                     #print(urlList)
 
+                if '!ip' in message:
+                    findIP(message[4:], line[2])
+
                 if NICK.lower() in message.lower() and line[2] != '##isso-tutorials':
                     if line[2] == '##isso-mnsu':
                         pass
@@ -291,8 +294,6 @@ while 1:
                                 if nickname.lower() in message.lower() and nickname != NICK and nickname != user:
                                     insult(line[2], nickname)
 
-                    elif '!ip' in message:
-                        findIP(message[4:], line[2])
 
                 ohelig = ''
                 sentence = ''

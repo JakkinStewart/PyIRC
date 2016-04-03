@@ -15,25 +15,18 @@ from string import punctuation
 from time import sleep
 import re
 
-# Default settings. Hope to change this toward file based rather than hard coded.
-#HOST='irc.freenode.net'
-#PORT=6697
-#NICK='DovaBot'
-#CHANNEL=['##isso-tutorials', '#temp']
-#sslEnable = 'y'
-#PASS = 'asdfghjkl'
-#IDENT='dovahkiin'
-#REALNAME='Python IRC Client'
-#urlList = []
-
 settingsFile = open("./settings.conf", "r")
 config = json.loads(settingsFile.read())
 settings = config['settings']
+
 # Connections. Automatically connects through ssl. Hope to make a function of these later.
 # Might just make it a class, but don't want to deal with it right now.
 ssL=socket.socket()
 ssL.connect((settings['host'], settings['port']))
-s = ssl.wrap_socket(ssL)
+if settings['ssl'] == 'yes':
+    s = ssl.wrap_socket(ssL)
+else:
+    pass
 
 # Sends the required stuffs to the server. Password, nickname, etc.
 def connectToServer(passwd, nick, ident, host, realname):
@@ -62,6 +55,7 @@ def helpMe(CHAN):
     sendMessage(("'help'    : Using the word 'help' with my name will give you this message.\r\n"), CHAN)
     sendMessage(("'insult'  : Saying insult to me and the nick of the person you want insulted will make me send an insulting message to them."), CHAN)
     sendMessage(("'tutorial': Saying 'tutorial' and 'wep' to me will give you a short tutorial on cracking wep with aircrack. I'm hoping to add more tutorials in the future."), CHAN)
+    sendMessage(("'!ip'     : Use !ip <ip address/url> to locate an IP. Uses ip-api.com."), CHAN)
     sendMessage(("I will automatically print out the titles of any URL in the channel that I am in."), CHAN)
 
 # Prints out a simple aircrack tutorial. Requires you to have a tutor on hand to explain it.

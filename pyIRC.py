@@ -13,16 +13,19 @@ import os
 import json
 from string import punctuation
 from time import sleep
+from time import time
 import re
 
+# Opens settings file and reads it.
 settingsFile = open("./settings.conf", "r")
 config = json.loads(settingsFile.read())
 settings = config['settings']
 
-# Connections. Automatically connects through ssl. Hope to make a function of these later.
+# Connections. Reads whether or not to connect through SSL. 
 # Might just make it a class, but don't want to deal with it right now.
 ssL=socket.socket()
 ssL.connect((settings['host'], settings['port']))
+
 if settings['ssl'] == 'yes':
     s = ssl.wrap_socket(ssL)
 else:
@@ -37,7 +40,9 @@ def connectToServer(passwd, nick, ident, host, realname):
 # This simplifies sending messages. Its a pain to type in everything over and over.
 def sendMessage(msg, CHAN):
     s.send(("PRIVMSG %s :%s\r\n" % (CHAN, msg)).encode('utf-8'))
+
     for a in logList:
+
         if CHAN in a:
             i = open(a, "a")
             i.write(NICK + ' | ' + msg + '\n')
@@ -65,7 +70,7 @@ def aircrack(CHAN):
     sendMessage(("Requirements: WiFi card. (Can be USB, as long as Aircrack-ng can see it.) | Helpful tutor. (I haven't been coded to be helpful yet.)"), CHAN)
 
     sendMessage(("airmon-ng check kill"), CHAN)
-    sleep(1)
+
     sendMessage(("airmon-ng start \x035[interface]\x03"), CHAN)
 
     sendMessage(("airodump-ng [interface]mon"), CHAN)
@@ -87,13 +92,10 @@ def advice(CHAN):
 # Prints out random insults
 def insult(CHAN, insultee): #, insultee):
     os.system('curl -s http://quandyfactory.com/insult/json > .insult')
-    #os.system("""curl -s http://www.randominsults.net/ | grep -a '<td bordercolor="#FFFFFF"><font face="Verdana" size="4"><strong><i>' | sed 's/<td bordercolor="#FFFFFF"><font face="Verdana" size="4"><strong><i>//' | sed 's|</i></strong></font>&nbsp;</td>||' | sed 's/^......//' > .insult""")
     inFile = open('.insult', 'r')
-    #insult = inFile.read()
     jsonAttempt = inFile.read()
     parsed_json = json.loads(jsonAttempt)
     sendMessage('%s, %s ' % (insultee, parsed_json['insult']), CHAN)
-    #%s would like you to know something. %s ' % (insultee, insulter, parsed_json['insult']), CHAN)
     os.system('rm .insult')
 
 # Detects if a url is present and returns true if they are
@@ -101,20 +103,25 @@ def urls(message):
     url = message
     urlHttp = re.findall('http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', url)
     urlWWW = re.findall('www.(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', url)
+
     if urlHttp != []:
         urlList.append(urlHttp)
+
     elif urlWWW != []:
         urlList.append(urlWWW)
-    #print(url)
+
     if urlList != []:
         return True
+
     else:
         return False
 
 # Finds the title of the web page and prints it out. Trying to add a tinyurl to the title as well.
 def printUrls(urls, CHAN):
     #print(urls)
+
     for websites in urls:
+
         for web in websites:
             #print(web)
             os.system("curl -s %s | grep -iPo '(?<=<title>)(.*)(?=</title>)' > .url" % web)
@@ -123,30 +130,33 @@ def printUrls(urls, CHAN):
             tinyurl = os.system("""curl -s curl 'https://www.googleapis.com/urlshortener/v1/url?key=AIzaSyAYRyJuXmfWHgc6_lWjmJ8tpE8A932y9i8' -H 'Content-Type: application/json' -d '{"longUrl": "%s"}' > .tinyurl""" % web)
             tinyInFile = open('.tinyurl')
             jsonAttempt = tinyInFile.read()
+
             try:
                 tinyurl = json.loads(jsonAttempt)
-                #print(tinyurl["id"])
 
                 if '&#x27;' in printUrls:
                     printUrls = re.sub('&#x27;', "'", printUrls)
+
                 if '&#171;' in printUrls:
                     printUrls = re.sub('&#171;', '«', printUrls)
+
                 if '&mdash;' in printUrls:
                     printUrls = re.sub('&mdash;', '-', printUrls)
 
                 sendMe = '%s - %s' % (printUrls.strip(), tinyurl['id'])
-                #print(sendMe)
                 sendMessage(('^ %s ^' % sendMe), CHAN)
+
             except KeyError:
                 pass
+
     del urlList[:]
 
 # Searches ips with ip-api.com
 def findIP(ips, CHAN):
-    #print(ips)
     os.system('curl -s http://ip-api.com/json/%s > .ip' % ips)
     tempIPs = open('.ip', 'r')
     jsonRead = json.loads(tempIPs.read())
+
     if jsonRead['status'] == 'success':
         sendMessage('ISP:           %s' % jsonRead['isp'], CHAN)
         sendMessage('Country:       %s' % jsonRead['country'], CHAN)
@@ -156,6 +166,7 @@ def findIP(ips, CHAN):
         sendMessage('Lat/Lon:       %s/%s' % (jsonRead['lat'], jsonRead['lon']), CHAN)
         sendMessage('Timezone:      %s' % jsonRead['timezone'], CHAN)
         sendMessage('Organizaton:   %s' % jsonRead['org'], CHAN)
+
     elif jsonRead['status'] == 'fail':
         sendMessage(jsonRead['message'], CHAN)
 
@@ -167,39 +178,67 @@ def botherOhelig(msg, chan):
 # Taken from http://archive.oreilly.com/pub/h/1968:
 # You need a readbuffer because your might not always be able to read complete IRC commands from the server (due to a saturated Internet connection, operating system limits, etc).
 readbuffer=''
+
+# Saves a debug log.
 debug = "debug.log"
+
+# Connects to server (as stated by the function name)
 connectToServer(settings['pass'],
                 settings['nick'],
                 settings['ident'],
                 settings['host'],
                 settings['realname'])
+
+# Creates empty list. Will be populated with users in the channels.
 userList = []
+
+# Forgot what this does. Will find out later.
 logList = []
-count = 0
+
+# Creates a counter. Don't remember what this does either.
+#count = 0
+
+# Sets nick to user's selected nickname
 NICK = settings['nick']
+
+# Makes a counter. Counter used to seperate channels into seperate lists. Makes life easier.
 counter = 0
+
+# Counts how many channels. Makes a list of users with these channels.
 chanCount = -1
+
 print("Connecting...")
 
+# For every channel, make a <channel>.log file. Also, I found the counter thing.
 for a in settings['channel']:
     counter += 1
     logList.append("%s.log" % a)
 
+# For as many counts in the counter variable, make a list. Add users to that list. 
 for i in range(counter):
     users = [] * counter
     userList.append(users)
 
+# Here's the fun part! This part starts the infinite loop.
+# The infinite loop will run certain things according to certain triggers. (No, its not a feminist.)
 while 1:
     try:
-        # Read 1024 bytes from the server and append it to the readbuffer.
+        # Read 4096 bytes from the server and append it to the readbuffer.
         readbuffer=readbuffer + s.recv(4096).decode()
         temp=readbuffer.split('\n')
         readbuffer=temp.pop()
+
+        # The program receives everything as a list. This will go through the list and allow us to manipulate it.
+        # It also makes things easier to read when things are printed.
         for line in temp:
             line=line.rstrip()
             line=line.split()
             dbg = open(debug, "a")
+
+            # Sometimes the debug writer doesn't like certain characters. So I'll just skip over them.
+            # They aren't important (just things like \x02 and stuff like that).
             try:
+
                 for i in line:
                     dbg.write(i + ' ')
                 dbg.write('\n')
@@ -208,28 +247,35 @@ while 1:
             except UnicodeEncodeError:
                 pass
 
+            # If the server pings, reply. (That way you don't get booted off the server.
             if line[0]=='PING':
                 s.send(("PONG %s\r\n" % line[1]).encode('utf-8'))
+
+            # If the line equals "mode", then join channels. It won't work otherwise.
             if (line[1]=='MODE'):
                 for channel in settings['channel']:
                     s.send(("JOIN %s\r\n" % channel).encode('utf-8'))
                 print("Connected!")
 
             try:
+
+                # Lines containing "=" in them contain the list of users in the channel.
                 if line[3] == '=':
 
                     for channels in line[4:]:
+
                         if channels[0] == '#':
                             chanCount += 1
                             userList[chanCount].append(channels)
+
                         elif channels[0] == ':':
                             userList[chanCount].append(channels[1:])
+
                         else: userList[chanCount].append(channels)
 
             except IndexError:
                 pass
 
-            #print(userList)
             message = ''
             user = ''
 
@@ -238,12 +284,18 @@ while 1:
                 temporary = stringy.split('!')
                 user = str(temporary[0])[1:]
                 y = line[3:]
+
                 for x in y:
+
                     if x[0] == ':':
                         message += x[1:] + ' '
+
                     else: message += x + ' '
+
                 printOut = user + " | " + message
+
                 for a in logList:
+
                     if line[2] in a:
                         i = open(a, 'a')
                         i.write(printOut + '\n')
@@ -258,6 +310,7 @@ while 1:
                     findIP(message[4:], line[2])
 
                 if NICK.lower() in message.lower() and line[2] != '##isso-tutorials':
+
                     if line[2] == '##isso-mnsu':
                         pass
 
@@ -267,6 +320,7 @@ while 1:
                 y = [''.join(c for c in s if c not in punctuation) for s in y]
 
                 if line[2] == '##isso-tutorials' or line[2] == '##temp':
+
                     if NICK.lower() in message.lower() and ('hello' in message.lower() or 'hi' in message.lower()):
                         sendMessage(("Hello, %s\r\n" % user), line[2])
 
@@ -283,23 +337,26 @@ while 1:
                         aircrack(line[2])
 
                     elif NICK.lower() in message.lower() and 'insult' in message.lower():
+
                         for users in userList:
+
                             for nickname in users:
+
                                 if nickname.lower() in message.lower() and nickname != NICK and nickname != user:
                                     insult(line[2], nickname)
 
 
                 ohelig = ''
                 sentence = ''
+
                 if NICK.lower() in message.lower() and ' say to' in message.lower():
+
                     for letter in message:
                         sentence += letter
-                    for category in userList:
-                        for name in category:
-                            if str(name).lower() in sentence.lower() and str(name).lower() != NICK.lower():
-                                if ohelig == '':
-                                    ohelig = name + ' '
-                    ignore = len(NICK + ' say to ' + ohelig + ' ')
+
+                    name = message.split(' ')
+                    ignore = len(NICK + ' say to ' + name[3] + ' ')
+
                     botherOhelig(sentence[ignore:], '##temp')
 
                 if 'sleep()' in message.lower():
@@ -319,11 +376,15 @@ while 1:
                 print(printOut)
 
     except KeyboardInterrupt:
+
         s.send(("QUIT \r\n").encode("utf-8"))
+
         for a in logList:
             i = open(a, "a")
             i.write('\nClosed\n')
             i.flush()
             i.close()
+
         print()
+
         exit('Closing')

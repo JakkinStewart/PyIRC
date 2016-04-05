@@ -192,11 +192,8 @@ connectToServer(settings['pass'],
 # Creates empty list. Will be populated with users in the channels.
 userList = []
 
-# Forgot what this does. Will find out later.
+# Makes a list of channel logs
 logList = []
-
-# Creates a counter. Don't remember what this does either.
-#count = 0
 
 # Sets nick to user's selected nickname
 NICK = settings['nick']
@@ -238,7 +235,7 @@ while 1:
             # Sometimes the debug writer doesn't like certain characters. So I'll just skip over them.
             # They aren't important (just things like \x02 and stuff like that).
             try:
-
+                # Writes to the debug log. Not sure if its actually useful.
                 for i in line:
                     dbg.write(i + ' ')
                 dbg.write('\n')
@@ -262,38 +259,61 @@ while 1:
                 # Lines containing "=" in them contain the list of users in the channel.
                 if line[3] == '=':
 
+                    # Iterates throught the messages sent by the server. Cuts out the useless junk.
                     for channels in line[4:]:
 
+                        # Channel names start with "#" and also lead the list of users
                         if channels[0] == '#':
                             chanCount += 1
                             userList[chanCount].append(channels)
 
+                        # Anything else after the channel name will start with a ":".
+                        # Cut out the colon and add it to the list.
                         elif channels[0] == ':':
                             userList[chanCount].append(channels[1:])
 
+                        # Otherwise, just add it to the list.
                         else: userList[chanCount].append(channels)
 
+            # If an index error occurs (sometimes the server will send a line shorter than expected), ignore.
             except IndexError:
                 pass
 
+            # Message and user will be populated later.
             message = ''
             user = ''
 
+            # PRIVMSG is the only thing you care about if you want to see people talking.
             if line[1] == 'PRIVMSG':
+
+                # Temporary variable stringy (quite original)
                 stringy = line[0]
+                print(stringy)
+                # Another temporary variable. It splits everything by "!". 
+                # For some reason, users always seem to start with "!"\
+                # This almost doesn't seem necessary.... Grr.
                 temporary = stringy.split('!')
+
+                # User is finally discovered. (Unfortunately, I have to coverty it to string before its useable.)
                 user = str(temporary[0])[1:]
+
+                # y (an insanely clear variable name) saves the rest of the line (ignoring the nicks)
                 y = line[3:]
 
+                # Iterate through y.
                 for x in y:
 
+                    # Ignoring any colons in the variable, save the rest of the data in the message variable
                     if x[0] == ':':
                         message += x[1:] + ' '
 
+                    # Save everything without cutting colons or anything weird.
                     else: message += x + ' '
 
+                # Save the user and their messages in the printOut variable
                 printOut = user + " | " + message
 
+                # Iterate through the channel log files and save to each file.
                 for a in logList:
 
                     if line[2] in a:
@@ -306,85 +326,100 @@ while 1:
                     #printUrls(urlList, line[2])
                     #print(urlList)
 
+                # Runs the findIP function to find geolocations of IP addresses
                 if '!ip' in message:
                     findIP(message[4:], line[2])
 
+                # If stuff isn't in the channel ##isso-tutorials, do the stuffs.
                 if NICK.lower() in message.lower() and line[2] != '##isso-tutorials':
 
+                    # If the stuff is in ##isso-mnsu, don't do shit
                     if line[2] == '##isso-mnsu':
                         pass
 
+                    # Otherwise, if a greeting exists in the message, send user a PM saying to not talk to you here
                     elif ('hello' in message.lower() or 'hi' in message.lower()):
                         sendMessage('Please join me in ##isso-tutorials. If you need help, mention my name and the word "help" the channel and I will print out a list of commands.\r\n', user)
 
+                # Get rid of all punctuation... Not sure why. Will find out later.
                 y = [''.join(c for c in s if c not in punctuation) for s in y]
 
+                # If message sent in either channel ##isso-tutorials or channel ##temp, do the stuffs!
                 if line[2] == '##isso-tutorials' or line[2] == '##temp':
 
+                    # Checks if bot's nick is in the message and if a greeting is in the message.
+                    # If yes, say hi back.
                     if NICK.lower() in message.lower() and ('hello' in message.lower() or 'hi' in message.lower()):
                         sendMessage(("Hello, %s\r\n" % user), line[2])
 
+                    # If bot's nick and the word advice in the message, give some advice from the advice function.
                     if NICK.lower() in message.lower() and 'advice' in message.lower():
                         advice(line[2])
 
+                    # If nick and "help" in the message, send the help message.
                     elif NICK.lower() in message.lower() and 'help' in message.lower():
                         helpMe(line[2])
 
+                    # Again, if nick is in the message and "info" in the message, send the info message.
                     elif NICK.lower() in message.lower() and 'info' in message.lower():
                         info(line[2], NICK)
 
+                    # Please tell me you get the idea.
+                    # Runs the aircrack function.
                     elif NICK.lower() in message.lower() and 'tutorial' in message.lower() and 'wep' in message.lower():
                         aircrack(line[2])
 
+                    # Insults the damn user. (Only insults people who exist.)
                     elif NICK.lower() in message.lower() and 'insult' in message.lower():
 
+                        # Runs through all the users
                         for users in userList:
 
+                            # Runs through the two lists to find the user
                             for nickname in users:
 
+                                # Does some checking, and insults the person.
                                 if nickname.lower() in message.lower() and nickname != NICK and nickname != user:
                                     insult(line[2], nickname)
 
-
+                # Initializes empty variables.
+                # This was designed to annoy one of the mods in my channel.
                 ohelig = ''
                 sentence = ''
 
+                # Checks to see if someone is asking bot to say something to someone.
                 if NICK.lower() in message.lower() and ' say to' in message.lower():
 
+                    # Apparently, the for loop will look at every letter rather than do what I want.
+                    # (Shows my lack of knowledge in python.)
                     for letter in message:
                         sentence += letter
 
+                    # Finds the name (spoiler, its in the third position in the list)
                     name = message.split(' ')
                     ignore = len(NICK + ' say to ' + name[3] + ' ')
 
+                    # Bothers Ohelig
                     botherOhelig(sentence[ignore:], '##temp')
 
-                if 'sleep()' in message.lower():
-                    sleep(120)
-                    botherOhelig("Ohelig, how could ", '##temp')
-                    sleep(4)
-                    botherOhelig('you want', '##temp')
-                    sleep(7)
-                    botherOhelig('to kill me?', '##temp')
-                    sleep(10)
-                    botherOhelig("OHELIG, I DON'T", '##temp')
-                    sleep(10)
-                    botherOhelig("WANT TO DIE!", '##temp')
-                    sleep(20)
-                    raise KeyboardInterrupt
-
+                # Prints the printOut variable.
                 print(printOut)
 
+    # If some fucker decides to interrupt the program, do this shit.
     except KeyboardInterrupt:
 
+        # Tell the server that the bot quits.
         s.send(("QUIT \r\n").encode("utf-8"))
 
+        # Write "Closed" in each logfile.
         for a in logList:
             i = open(a, "a")
             i.write('\nClosed\n')
             i.flush()
             i.close()
 
+        # Makes screen look prettier.
         print()
 
+        # Exits the program.
         exit('Closing')

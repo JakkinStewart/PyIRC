@@ -332,7 +332,7 @@ while True:
                                 i = open(a, 'a')
                                 i.write(printOut + '\n')
                                 i.close()
- \
+
                         except UnicodeEncodeError:
                             pass
 

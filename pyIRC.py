@@ -327,10 +327,14 @@ while True:
                     # Iterate through the channel log files and save to each file.
                     for a in logList:
 
-                        if line[2] in a:
-                            i = open(a, 'a')
-                            i.write(printOut + '\n')
-                            i.close()
+                        try:
+                            if line[2] in a:
+                                i = open(a, 'a')
+                                i.write(printOut + '\n')
+                                i.close()
+ \
+                        except UnicodeEncodeError:
+                            pass
 
                     #if urls(message):
                         #print(urlList)

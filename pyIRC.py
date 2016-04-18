@@ -453,6 +453,9 @@ while True:
         except socket.timeout:
             break
 
+        except TimeoutError:
+            break
+
         # If some fucker decides to interrupt the program, do this shit.
         except KeyboardInterrupt:
 

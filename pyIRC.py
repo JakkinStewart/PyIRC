@@ -23,20 +23,14 @@ settings = config['settings']
 
 # Connections. Reads whether or not to connect through SSL. 
 # Might just make it a class, but don't want to deal with it right now.
-ssL=socket.socket()
-ssL.connect((settings['host'], settings['port']))
-ssL.settimeout(60)
 
-if settings['ssl'] == 'yes':
-    s = ssl.wrap_socket(ssL)
-else:
-    pass
 
-# Sends the required stuffs to the server. Password, nickname, etc.
-def connectToServer(passwd, nick, ident, host, realname):
-    s.send(("PASS %s\r\n" % passwd).encode('utf-8'))
-    s.send(('NICK %s\r\n' % nick).encode('utf-8'))
+    # Sends the required stuffs to the server. Password, nickname, etc.
+def connectToServer(passwd, nick, ident, host, realname): #ident, host, realname):
     s.send(('USER %s %s bla : %s\r\n' % (ident, host, realname)).encode('utf-8'))
+    s.send(("PASS %s \r\n" % str(passwd)).encode('utf-8'))
+    s.send(('NICK %s \r\n' % nick).encode('utf-8'))
+    #s.send(('USER %s bla : %s\r\n' % (host, realname)).encode('utf-8')) #ident, host, realname)).encode('utf-8'))
 
 # This simplifies sending messages. Its a pain to type in everything over and over.
 def sendMessage(msg, CHAN):
@@ -182,7 +176,10 @@ readbuffer=''
 
 # Saves a debug log.
 debug = "debug.log"
-
+var = open(debug, "w")
+var.write("")
+var.flush()
+var.close()
 # Connects to server (as stated by the function name)
 # Creates empty list. Will be populated with users in the channels.
 userList = []
@@ -209,18 +206,48 @@ for i in range(counter):
     users = [] * counter
     userList.append(users)
 
+firstConnection = True
+
 # Here's the fun part! This part starts the infinite loop.
 # The infinite loop will run certain things according to certain triggers. (No, its not a feminist.)
 while True:
-    print("Connecting...")
+
+    if firstConnection == True:
+        ssL=socket.socket()
+        ssL.connect((settings['host'], settings['port']))
+        ssL.settimeout(60)
+        if settings['ssl'] == 'yes':
+            s = ssl.wrap_socket(ssL)
+        else:
+            s = ssL
+
+        firstConnection = False
+        print("Connecting...")
+
+    else:
+        #ssL.shutdown(SHUT_RDWR)
+        ssL.close()
+        ssL=socket.socket()
+        ssL.connect((settings['host'], settings['port']))
+        ssL.settimeout(60)
+        if settings['ssl'] == 'yes':
+            s = ssl.wrap_socket(ssL)
+
+        else:
+            s = ssL
+
+        print("Reconnecting...")
+
     connectToServer(settings['pass'],
-                settings['nick'],
-                settings['ident'],
-                settings['host'],
-                settings['realname'])
+                    settings['nick'],
+                    settings['ident'],
+                    settings['host'],
+                    settings['realname'])
+
     timeEnd = time() + 60
 
     while True:
+
         try:
             #if len(s.recv(4096)) == 0:
                 #break
@@ -239,6 +266,7 @@ while True:
             # The program receives everything as a list. This will go through the list and allow us to manipulate it.
             # It also makes things easier to read when things are printed.
             for line in temp:
+
                 line=line.rstrip()
                 line=line.split()
                 dbg = open(debug, "a")
@@ -256,10 +284,12 @@ while True:
                     pass
 
                 # If the server pings, reply. (That way you don't get booted off the server.
+
                 if line[0]=='PING':
                     s.send(("PONG %s\r\n" % line[1]).encode('utf-8'))
 
                 # If the line equals "mode", then join channels. It won't work otherwise.
+                #sleep(5)
                 if (line[1]=='MODE'):
                     for channel in settings['channel']:
                         s.send(("JOIN %s\r\n" % channel).encode('utf-8'))

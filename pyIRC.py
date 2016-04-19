@@ -215,7 +215,7 @@ while True:
     if firstConnection == True:
         ssL=socket.socket()
         ssL.connect((settings['host'], settings['port']))
-        ssL.settimeout(60)
+        ssL.settimeout(230)
         if settings['ssl'] == 'yes':
             s = ssl.wrap_socket(ssL)
         else:
@@ -229,7 +229,7 @@ while True:
         ssL.close()
         ssL=socket.socket()
         ssL.connect((settings['host'], settings['port']))
-        ssL.settimeout(60)
+        ssL.settimeout(230)
         if settings['ssl'] == 'yes':
             s = ssl.wrap_socket(ssL)
 

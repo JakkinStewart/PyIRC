@@ -445,7 +445,7 @@ while True:
                         ignore = len(NICK + ' say to ' + name[3] + ' ')
 
                         # Bothers Ohelig
-                        botherOhelig(sentence[ignore:], '##temp')
+                        botherOhelig(sentence[ignore:], '##isso-mnsu')
 
                     # Prints the printOut variable.
                     print(printOut)

@@ -448,7 +448,10 @@ while True:
                         botherOhelig(sentence[ignore:], '##isso-mnsu')
 
                     # Prints the printOut variable.
-                    print(printOut)
+                    try:
+                        print(printOut)
+                    except UnicodeEncodeError:
+                        pass
 
         except socket.timeout:
             break

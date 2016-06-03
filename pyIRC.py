@@ -259,6 +259,9 @@ while True:
                                 #settings['host'],
                                 #settings['realname'])
             # Read 4096 bytes from the server and append it to the readbuffer.
+            if len(s.recv(4096)) == 0:
+                break
+
             readbuffer=readbuffer + s.recv(4096).decode(errors='ignore')
             temp=readbuffer.split('\n')
             readbuffer=temp.pop()

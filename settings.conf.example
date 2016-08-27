@@ -9,7 +9,8 @@
 			"##temp"
 		],
 		"ident": "dovahkiin",
-		"realname": "PythonIRCClient"
+		"realname": "PythonIRCClient",
+		"apiKey": "APIKEYHEREDONTSHARE"
 	}
 }
 

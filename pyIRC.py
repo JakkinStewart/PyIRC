@@ -122,7 +122,7 @@ def printUrls(urls, CHAN):
             os.system("curl -s %s | grep -iPo '(?<=<title>)(.*)(?=</title>)' > .url" % web)
             inFile = open('.url')
             printUrls = inFile.read()
-            tinyurl = os.system("""curl -s curl 'https://www.googleapis.com/urlshortener/v1/url?key=AIzaSyAYRyJuXmfWHgc6_lWjmJ8tpE8A932y9i8' -H 'Content-Type: application/json' -d '{"longUrl": "%s"}' > .tinyurl""" % web)
+            tinyurl = os.system("""curl -s curl 'https://www.googleapis.com/urlshortener/v1/url?key=%s' -H 'Content-Type: application/json' -d '{"longUrl": "%s"}' > .tinyurl""" % (settings['api'], web))
             tinyInFile = open('.tinyurl')
             jsonAttempt = tinyInFile.read()
 
